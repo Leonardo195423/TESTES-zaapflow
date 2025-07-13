@@ -1,245 +1,546 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zaapflow - Crie Páginas de Vendas Estilo WhatsApp</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Paleta de cores customizada para amarelo neon e efeitos de brilho */
-        /* Usando text-shadow e box-shadow para o efeito glow */
-        .glow {
-            text-shadow: 0 0 5px #facc15, 0 0 10px #facc15, 0 0 15px #facc15, 0 0 20px #facc15; /* Usando yellow-400 */
+import React, { useState, useEffect, useRef } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, query, orderBy, addDoc, onSnapshot, getDocs } from 'firebase/firestore';
+
+// Define a main App component for the chat application
+const App = () => {
+    // State to manage the current mode of the application: 'chat' or 'developer'
+    const [appMode, setAppMode] = useState('chat');
+    // State to store the chat history (messages)
+    const [chatHistory, setChatHistory] = useState([]);
+    // State to store the current message/prompt being typed by the user
+    const [currentPrompt, setCurrentPrompt] = useState('');
+    // State to indicate if the AI is currently generating a response or image/code
+    const [isLoading, setIsLoading] = useState(false);
+    // State to store the Firestore database instance
+    const [db, setDb] = useState(null);
+    // State to store the Firebase Auth instance
+    const [auth, setAuth] = useState(null);
+    // State to store the current user's ID
+    const [userId, setUserId] = useState(null);
+    // State to store the selected image file (for sending to AI in chat mode)
+    const [selectedImage, setSelectedImage] = useState(null);
+    // State to store the base64 representation of the selected image
+    const [selectedImageBase64, setSelectedImageBase64] = useState(null);
+    // Ref to automatically scroll to the bottom of the chat history
+    const messagesEndRef = useRef(null);
+    // Ref for the file input element (for image upload)
+    const fileInputRef = useRef(null);
+
+    // Developer Mode States
+    // State to store the code content being edited
+    const [codeContent, setCodeContent] = useState('');
+    // State to store the type of code being edited ('html', 'react', 'javascript')
+    const [codeType, setCodeType] = useState('html');
+    // State to store the name of the current project
+    const [projectName, setProjectName] = useState('');
+    // State to store the list of saved projects
+    const [projects, setProjects] = useState([]);
+    // Ref for the iframe used for live code preview
+    const previewRef = useRef(null);
+    // State for simulating code generation progress
+    const [generationProgress, setGenerationProgress] = useState(0);
+    // Ref to store the interval ID for progress simulation
+    const progressIntervalRef = useRef(null);
+    // State for copy message feedback
+    const [copyMessage, setCopyMessage] = useState('');
+    // State to control the visibility of the hamburger menu
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    // State to store the history of code changes for undo functionality
+    const [codeHistory, setCodeHistory] = useState([]);
+    // State to track the current position in the code history for undo/redo (though redo isn't implemented yet)
+    const [historyPointer, setHistoryPointer] = useState(-1);
+    // State to store the URL of the image generated in developer mode
+    const [developerGeneratedImageUrl, setDeveloperGeneratedImageUrl] = useState(null);
+    // State to indicate if an image is currently being generated in chat mode
+    const [isGeneratingImageChat, setIsGeneratingImageChat] = useState(false);
+    // State to store the URL of the video generated in developer mode
+    const [developerGeneratedVideoUrl, setDeveloperGeneratedVideoUrl] = useState(null);
+
+
+    // Effect hook for Firebase initialization and authentication
+    useEffect(() => {
+        const initializeFirebase = async () => {
+            try {
+                // Get Firebase configuration from global variable
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                // Initialize Firebase app
+                const app = initializeApp(firebaseConfig);
+                // Get Firestore and Auth instances
+                const firestoreDb = getFirestore(app);
+                const firebaseAuth = getAuth(app);
+
+                setDb(firestoreDb);
+                setAuth(firebaseAuth);
+
+                // Authenticate user
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(firebaseAuth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(firebaseAuth);
+                }
+
+                // Listen for auth state changes to get the user ID
+                onAuthStateChanged(firebaseAuth, (user) => {
+                    if (user) {
+                        setUserId(user.uid);
+                    } else {
+                        // If no user, generate a random ID for anonymous use
+                        setUserId(crypto.randomUUID());
+                    }
+                });
+            } catch (error) {
+                console.error("Erro ao inicializar o Firebase:", error);
+            }
+        };
+
+        initializeFirebase();
+    }, []); // Run once on component mount
+
+    // Effect hook to subscribe to real-time chat history updates from Firestore
+    useEffect(() => {
+        if (db && userId && appMode === 'chat') {
+            // Get the app ID from the global variable or use a default
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            // Define the collection path for user-specific chat history
+            const chatCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/chatHistory`);
+            // Create a query to order messages by timestamp
+            const q = query(chatCollectionRef, orderBy('timestamp'));
+
+            // Subscribe to real-time updates
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const messages = [];
+                snapshot.forEach((doc) => {
+                    messages.push(doc.data());
+                });
+                setChatHistory(messages);
+            }, (error) => {
+                console.error("Erro ao obter histórico do chat:", error);
+            });
+
+            // Clean up the subscription when the component unmounts or dependencies changes
+            return () => unsubscribe();
         }
-         .glow-button {
-            box-shadow: 0 0 5px #facc15, 0 0 15px #facc15, 0 0 30px #facc15; /* Usando yellow-400 */
-         }
+    }, [db, userId, appMode]); // Re-run when db, userId, or appMode changes
 
-        /* Responsividade para o contêiner do vídeo */
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* Proporção 16:9 */
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-            background: #000;
+    // Effect hook to scroll to the latest message whenever chat history updates
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [chatHistory]);
+
+    // Function to handle image file selection (for chat mode and developer mode)
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result.split(',')[1];
+                setSelectedImageBase64(base64);
+                console.log("Imagem selecionada e base64 gerado:", base64.substring(0, 50) + "...", "Tipo:", file.type);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setSelectedImage(null);
+            setSelectedImageBase64(null);
+            console.log("Nenhuma imagem selecionada.");
         }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+    };
+
+    // Function to clear the selected image
+    const clearSelectedImage = () => {
+        setSelectedImage(null);
+        setSelectedImageBase64(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = ''; // Clear the file input
+        }
+    };
+
+    // Function to run the code in the preview iframe
+    const runCode = () => {
+        const iframe = previewRef.current;
+        if (!iframe) return;
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        if (codeType === 'html') {
+            doc.write(codeContent);
+        } else if (codeType === 'javascript') {
+            doc.write(`<html><body><script>${codeContent}</script></body></html>`);
+        } else if (codeType === 'react') {
+            // For React, we need to include React and ReactDOM CDNs, and Babel for JSX
+            const reactHtml = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Pré-visualização React</title>
+                    <script src="https://unpkg.com/react/umd/react.development.js"></script>
+                    <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+                    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <style>
+                        body { margin: 0; font-family: 'Inter', sans-serif; }
+                        /* Ensure full height for React root */
+                        #root { height: 100vh; width: 100vw; }
+                    </style>
+                </head>
+                <body>
+                    <div id="root"></div>
+                    <script type="text/babel">
+                        ${codeContent}
+                        // Ensure the App component is rendered
+                        ReactDOM.render(<App />, document.getElementById('root'));
+                    </script>
+                </body>
+                </html>
+            `;
+            doc.write(reactHtml);
+        }
+        doc.close();
+    };
+
+    // Function to copy code to clipboard
+    const copyCodeToClipboard = () => {
+        if (codeContent) {
+            const textarea = document.createElement('textarea');
+            textarea.value = codeContent;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            setCopyMessage('Código copiado!');
+            setTimeout(() => setCopyMessage(''), 2000); // Clear message after 2 seconds
+        }
+    };
+
+    // Function to save the current project to Firestore
+    const saveProject = async () => {
+        if (!projectName.trim() || !codeContent.trim() || !db || !userId) {
+            console.error("Nome do projeto, conteúdo do código ou dados do usuário/DB em falta.");
+            return;
+        }
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const projectsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/projects`);
+
+        try {
+            await addDoc(projectsCollectionRef, {
+                name: projectName,
+                code: codeContent,
+                type: codeType,
+                timestamp: Date.now()
+            });
+            console.log("Projeto guardado com sucesso!");
+            loadProjects(); // Reload projects to update the list in the hamburger menu
+        } catch (error) {
+            console.error("Erro ao guardar projeto:", error);
+        }
+    };
+
+    // Function to load projects from Firestore
+    const loadProjects = async () => {
+        if (!db || !userId) return;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const projectsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/projects`);
+        const q = query(projectsCollectionRef, orderBy('timestamp', 'desc'));
+
+        try {
+            const snapshot = await getDocs(q); // Use getDocs for a one-time fetch
+            const loadedProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setProjects(loadedProjects);
+            console.log("Projetos carregados:", loadedProjects);
+        } catch (error) {
+            console.error("Erro ao carregar projetos:", error);
+        }
+    };
+
+    // Function to select a loaded project and populate the editor
+    const selectProject = (project) => {
+        // Add current state to history before loading new project
+        addStateToHistory();
+        setCodeContent(project.code);
+        setCodeType(project.type);
+        setProjectName(project.name);
+        setIsMenuOpen(false); // Close menu after selecting a project
+        setDeveloperGeneratedImageUrl(null); // Clear any previously generated image
+        setDeveloperGeneratedVideoUrl(null); // Clear any previously generated video
+        // Code will run automatically via useEffect when codeContent changes
+    };
+
+    // Function to add current code state to history
+    const addStateToHistory = () => {
+        const newHistory = codeHistory.slice(0, historyPointer + 1); // Remove any "future" states
+        const MAX_HISTORY_SIZE = 20; // Limit history size
+        if (newHistory.length >= MAX_HISTORY_SIZE) {
+            newHistory.shift(); // Remove the oldest state
+        }
+        newHistory.push({ codeContent, codeType, projectName });
+        setCodeHistory(newHistory);
+        setHistoryPointer(newHistory.length - 1);
+    };
+
+    // Function to undo the last code change
+    const undoCodeChange = () => {
+        if (historyPointer > 0) {
+            const previousState = codeHistory[historyPointer - 1];
+            setCodeContent(previousState.codeContent);
+            setCodeType(previousState.codeType);
+            setProjectName(previousState.projectName);
+            setHistoryPointer(historyPointer - 1);
+            setDeveloperGeneratedImageUrl(null); // Clear image on undo
+            setDeveloperGeneratedVideoUrl(null); // Clear video on undo
+            // runCode will be triggered by useEffect due to codeContent change
+        } else {
+            console.log("Não há mais estados para desfazer.");
+        }
+    };
+
+    // Effect hook to load projects when entering developer mode
+    useEffect(() => {
+        if (appMode === 'developer' && db && userId) {
+            loadProjects();
+        }
+    }, [appMode, db, userId]);
+
+    // Effect hook to run code automatically when codeContent changes in developer mode
+    // Also, add current state to history when codeContent changes, but not during loading
+    useEffect(() => {
+        if (appMode === 'developer' && codeContent && !isLoading) {
+            runCode();
+            // Add to history only if it's a user-initiated change or AI-generated
+            // Avoid adding to history when undoing or initially loading
+            if (codeHistory[historyPointer]?.codeContent !== codeContent ||
+                codeHistory[historyPointer]?.codeType !== codeType ||
+                codeHistory[historyPointer]?.projectName !== projectName) {
+                // Debounce adding to history to avoid too many snapshots during typing
+                const debounceTimer = setTimeout(() => {
+                    addStateToHistory();
+                }, 500); // Add state after 500ms of no typing
+                return () => clearTimeout(debounceTimer);
+            }
+        }
+    }, [codeContent, codeType, projectName, appMode, isLoading]); // Re-run when codeContent changes and not loading
+
+    // Function to send a message to the AI, with a mode for text or image/code generation
+    const sendMessage = async (mode = 'text') => {
+        // Prevent sending empty messages or if loading, based on mode
+        if (appMode === 'chat') {
+            if ((!currentPrompt.trim() && !selectedImage && mode !== 'image') || isLoading || !db || !userId) return;
+        } else { // appMode === 'developer'
+            if ((!currentPrompt.trim() && mode !== 'generateImageDev' && mode !== 'generateVideoDev') || isLoading || !db || !userId) return;
         }
 
-        /* Keyframes para Animação de Fade-in com leve deslocamento */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        setIsLoading(true); // Set general loading state to true
+        setGenerationProgress(0); // Initialize progress for developer mode
+        setDeveloperGeneratedImageUrl(null); // Clear any previous generated image in dev mode
+        setDeveloperGeneratedVideoUrl(null); // Clear any previous generated video in dev mode
+        
+        // Determine if it's an image generation request in chat mode
+        const lowerCasePrompt = currentPrompt.toLowerCase();
+        const imageGenerationKeywords = ['gerar imagem', 'criar imagem', 'fazer imagem', 'desenhar imagem', 'gerar foto', 'criar foto', 'fazer foto', 'desenhar foto'];
+        const isImageGenerationRequestInChat = appMode === 'chat' && (mode === 'image' || imageGenerationKeywords.some(keyword => lowerCasePrompt.includes(keyword)));
+
+        if (appMode === 'developer' && mode !== 'generateImageDev' && mode !== 'generateVideoDev') {
+            setCodeContent("Gerando código... Por favor, aguarde.");
+            progressIntervalRef.current = setInterval(() => {
+                setGenerationProgress(prevProgress => {
+                    if (prevProgress < 99) {
+                        return prevProgress + 1; // Increment by 1%
+                    }
+                    return prevProgress;
+                });
+            }, 100); // Update every 100ms
+        } else if (appMode === 'developer' && mode === 'generateImageDev') {
+            setDeveloperGeneratedImageUrl('loading'); // Show loading for image generation in dev mode
+        } else if (appMode === 'developer' && mode === 'generateVideoDev') {
+            setDeveloperGeneratedVideoUrl('loading'); // Show loading for video generation in dev mode
+        } else if (isImageGenerationRequestInChat) {
+            setIsGeneratingImageChat(true); // Show loading for image generation in chat mode
         }
 
-         /* Keyframes para Animação de Brilho Pulsante no Botão */
-         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 5px #facc15, 0 0 15px #facc15, 0 0 30px #facc15; }
-            50% { box-shadow: 0 0 10px #facc15, 0 0 25px #facc15, 0 0 50px #facc15; }
-        }
 
-        /* Aplica estado inicial e animação para elementos com animate-fade-in */
-        .animate-fade-in {
-            opacity: 0; /* Começa invisível */
-            transform: translateY(20px); /* Começa ligeiramente abaixo */
-            animation: fadeIn 1s ease-out forwards; /* Aplica a animação */
-        }
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const chatCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/chatHistory`);
 
-        /* Classes utilitárias de delay para animação de fade-in */
-        .animate-fade-in.delay-200 { animation-delay: 0.2s; }
-        .animate-fade-in.delay-300 { animation-delay: 0.3s; }
-        .animate-fade-in.delay-500 { animation-delay: 0.5s; }
-        .animate-fade-in.delay-700 { animation-delay: 0.7s; }
-        .animate-fade-in.delay-900 { animation-delay: 0.9s; }
-        .animate-fade-in.delay-1000 { animation-delay: 1.0s; }
+        try {
+            if (appMode === 'developer') {
+                if (mode === 'generateImageDev') {
+                    const imagePrompt = currentPrompt.trim();
+                    if (!imagePrompt) {
+                        console.error("É necessário um prompt para gerar uma imagem.");
+                        return; // Exit early if no prompt
+                    }
 
-        /* Aplica animação de brilho pulsante */
-        .animate-pulse-glow {
-            animation: pulseGlow 2s infinite;
-        }
+                    const imagePayload = { instances: { prompt: imagePrompt }, parameters: { "sampleCount": 1 } };
+                    const imageApiKey = "";
+                    const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${imageApiKey}`;
 
-        /* Oculta o contêiner do botão inicialmente e adiciona transição */
-        #buyButtonContainer {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-        }
-        /* Classe para tornar o contêiner visível */
-        #buyButtonContainer.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-    </style>
-</head>
-<body class="bg-black text-gray-100 font-sans">
+                    try {
+                        const imageResponse = await fetch(imageApiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(imagePayload)
+                        });
+                        const imageResult = await imageResponse.json();
 
-    <!-- Wrapper principal com contêiner e padding -->
-    <div class="container mx-auto px-4 py-8">
+                        if (imageResult.predictions && imageResult.predictions.length > 0 && imageResult.predictions[0].bytesBase64Encoded) {
+                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
+                            setDeveloperGeneratedImageUrl(imageUrl);
+                        } else {
+                            console.error("Erro ao gerar imagem no modo programador: Estrutura de resposta inesperada.", imageResult);
+                            setDeveloperGeneratedImageUrl(null);
+                        }
+                    } catch (error) {
+                        console.error("Erro ao chamar a API de geração de imagem no modo programador:", error);
+                        setDeveloperGeneratedImageUrl(null);
+                    }
+                } else if (mode === 'generateVideoDev') {
+                    const videoPrompt = currentPrompt.trim();
+                    if (!videoPrompt) {
+                        console.error("É necessário um prompt para gerar um vídeo.");
+                        setIsLoading(false);
+                        setDeveloperGeneratedVideoUrl(null);
+                        return;
+                    }
 
-        <!-- Seção de Cabeçalho/Herói -->
-        <header class="text-center mb-12 animate-fade-in">
-            <h1 class="text-4xl md:text-6xl font-bold text-yellow-400 mb-4 glow">Zaapflow</h1>
-            <p class="text-xl md:text-2xl text-gray-300">Crie Páginas de Vendas Incríveis Estilo WhatsApp em Minutos!</p>
-        </header>
+                    setDeveloperGeneratedVideoUrl('loading');
+                    setIsLoading(true); // Ensure general loading is true
 
-        <!-- Seção VSL (Vídeo de Vendas) -->
-        <section class="mb-12 animate-fade-in delay-200">
-            <div class="max-w-4xl mx-auto bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-yellow-700">
-                <div class="video-container">
-                    <!-- Embed do YouTube VSL -->
-                    <!-- Adicionado rel=0 e modestbranding=1 para um player mais limpo -->
-                    <iframe src="https://www.youtube.com/embed/eKjMePaNJpQ?autoplay=0&controls=1&rel=0&modestbranding=1"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen></iframe>
-                </div>
-            </div>
-        </section>
+                    // Simulate video generation API call
+                    setTimeout(async () => {
+                        try {
+                            // In a real scenario, you would call a video generation API here.
+                            // For demonstration, we'll use a placeholder video.
+                            const placeholderVideoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; // Example placeholder video
+                            setDeveloperGeneratedVideoUrl(placeholderVideoUrl);
+                            console.log("Vídeo gerado (simulado):", placeholderVideoUrl);
+                        } catch (error) {
+                            console.error("Erro ao gerar vídeo (simulado):", error);
+                            setDeveloperGeneratedVideoUrl(null);
+                            // Optionally, display an error message
+                        } finally {
+                            setIsLoading(false);
+                            setCurrentPrompt('');
+                            clearSelectedImage();
+                        }
+                    }, 3000); // Simulate a 3-second generation time
+                    return; // Exit sendMessage after handling video generation
+                }
+                else {
+                    // Logic for code generation/refinement/debugging with optional image analysis
+                    let designInstruction = "";
+                    if (codeType === 'html' || codeType === 'react') {
+                        designInstruction = "Garanta que o design é robusto, avançado e esteticamente refinado, utilizando as classes do Tailwind CSS para um estilo moderno e responsivo. Foque-se na experiência do utilizador e na clareza visual.";
+                    } else if (codeType === 'javascript') {
+                        designInstruction = "Garanta que o código é robusto, avançado e otimizado para desempenho. Foque-se nas melhores práticas de programação e na clareza do código.";
+                    }
 
-        <!-- Seção do Botão (Inicialmente Oculta) -->
-        <!-- A visibilidade é controlada via JavaScript e CSS transition -->
-        <section id="buyButtonContainer" class="text-center mt-12 mb-12">
-             <!-- Botão com link placeholder e animação pulsante -->
-             <a href="#" class="inline-block px-12 py-4 text-2xl font-bold text-black bg-yellow-400 rounded-full uppercase transition-all duration-300 hover:bg-yellow-300 glow-button animate-pulse-glow">
-                Comprar Ferramenta Agora!
-            </a>
-             <p class="mt-4 text-gray-400 text-sm">(Clique no botão acima para garantir seu acesso imediato)</p>
-        </section>
+                    const developerPromptParts = [];
+                    // Add the code context to the prompt
+                    developerPromptParts.push({ text: `Dado o seguinte código de tipo '${codeType}':\n\n\`\`\`${codeType}\n${codeContent}\n\`\`\`\n\n` });
+                    // Add the user's text prompt
+                    developerPromptParts.push({ text: `E o pedido do utilizador: '${currentPrompt}'. ` });
+                    // Add image data if available
+                    if (selectedImageBase64 && selectedImage) {
+                        developerPromptParts.push({ text: 'Analise a imagem fornecida para referência de design ou contexto.' });
+                        developerPromptParts.push({
+                            inlineData: {
+                                mimeType: selectedImage.type,
+                                data: selectedImageBase64
+                            }
+                        });
+                    }
+                    // Add general instructions for the AI
+                    developerPromptParts.push({ text: `\n\nPor favor, forneça uma versão refinada, correções de bugs ou novo código conforme solicitado. Foque-se nas melhores práticas. ${designInstruction} Se gerar novo código, forneça APENAS o código puro (sem markdown extra ou explicações fora dos comentários do código). Para React, forneça um componente funcional chamado 'App' exportado como padrão. Se estiver a depurar ou a refinar, explique as questões e sugira soluções nos comentários do código ou como texto antes do bloco de código.` });
 
-        <!-- Seção de Funcionalidades (Exemplo) -->
-        <section class="mb-12 animate-fade-in delay-500">
-            <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-400 mb-8 glow">Porquê Escolher Zaapflow?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Item de Funcionalidade 1 -->
-                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                    <div class="text-yellow-400 text-4xl mb-4 text-center">⚡</div>
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Velocidade Incrível</h3>
-                    <p class="text-gray-300">Crie páginas de vendas que carregam super rápido, proporcionando uma experiência fluida.</p>
-                </div>
-                <!-- Item de Funcionalidade 2 -->
-                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                     <div class="text-yellow-400 text-4xl mb-4 text-center">📱</div>
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Design Responsivo</h3>
-                    <p class="text-gray-300">Suas páginas se adaptam perfeitamente a qualquer tela, priorizando o mobile.</p>
-                </div>
-                <!-- Item de Funcionalidade 3 -->
-                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                     <div class="text-yellow-400 text-4xl mb-4 text-center">⭐</div>
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Conversão Otimizada</h3>
-                    <p class="text-gray-300">Elementos estrategicamente posicionados para maximizar suas taxas de conversão.</p>
-                </div>
-                 <!-- Item de Funcionalidade 4 -->
-                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                     <div class="text-yellow-400 text-4xl mb-4 text-center">⚙️</div>
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Fácil de Usar</h3>
-                    <p class="text-gray-300">Interface intuitiva e amigável, mesmo para quem não tem experiência técnica.</p>
-                </div>
-                 <!-- Item de Funcionalidade 5 -->
-                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                     <div class="text-yellow-400 text-4xl mb-4 text-center">💰</div>
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Alto Retorno</h3>
-                    <p class="text-gray-300">Invista na ferramenta certa e veja suas vendas e lucros dispararem.</p>
-                </div>
-                 <!-- Item de Funcionalidade 6 -->
-                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                     <div class="text-yellow-400 text-4xl mb-4 text-center">🔄</div>
-                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Atualizações Constantes</h3>
-                    <p class="text-gray-300">Conte com melhorias e novas funcionalidades para estar sempre à frente.</p>
-                </div>
-            </div>
-        </section>
+                    const payload = { contents: [{ role: "user", parts: developerPromptParts }] };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-         <!-- Seção de Depoimentos (Exemplo) -->
-        <section class="mb-12 animate-fade-in delay-700">
-            <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-400 mb-8 glow">O Que Dizem Nossos Clientes?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Depoimento 1 -->
-                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                    <p class="text-gray-300 italic mb-4">"O Zaapflow mudou o jogo para mim! Minhas vendas aumentaram drasticamente depois que comecei a usar as páginas estilo WhatsApp. É muito rápido e fácil de configurar."</p>
-                    <p class="font-semibold text-yellow-400">- Ana Paula, Empreendedora Digital</p>
-                </div>
-                 <!-- Depoimento 2 -->
-                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
-                    <p class="text-gray-300 italic mb-4">"Simplesmente incrível! Eu não sou expert em tecnologia, mas consegui criar uma página de vendas profissional em minutos. A estética é perfeita para mobile. Recomendo demais!"</p>
-                    <p class="font-semibold text-yellow-400">- João Silva, Afiliado</p>
-                </div>
-                 <!-- Depoimento 3 (Adicional para preencher) -->
-                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700 md:col-span-2">
-                    <p class="text-gray-300 italic mb-4">"A velocidade de carregamento das páginas Zaapflow é impressionante. Isso faz toda a diferença na experiência do usuário e, claro, nas conversões. Ferramenta essencial para quem vende online!"</p>
-                    <p class="font-semibold text-yellow-400">- Carla Mendes, Lançadora Digital</p>
-                </div>
-            </div>
-        </section>
+                    console.log("Payload sendo enviado para a API Gemini (modo programador):", JSON.stringify(payload, null, 2));
 
-        <!-- Chamada para Ação Final -->
-         <section class="text-center mt-12 mb-12 animate-fade-in delay-900">
-             <h2 class="text-3xl md:text-4xl font-bold text-yellow-400 mb-6 glow">Não Perca Mais Tempo!</h2>
-            <p class="text-xl md:text-2xl text-gray-300 mb-8">Transforme suas vendas com a velocidade e o design de alta conversão do Zaapflow hoje mesmo.</p>
-            <!-- Você pode repetir o botão aqui, se quiser um botão sempre visível -->
-            <!-- <a href="#" class="inline-block px-12 py-4 text-2xl font-bold text-black bg-yellow-400 rounded-full uppercase transition-all duration-300 hover:bg-yellow-300 glow-button animate-pulse-glow">
-                Comprar Ferramenta Agora!
-            </a> -->
-         </section>
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    console.log("Resultado da API Gemini (modo programador):", result);
 
-    </div> <!-- Fim do Wrapper principal -->
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        let aiResponseText = result.candidates[0].content.parts[0].text;
 
-    <!-- Rodapé -->
-    <footer class="bg-gray-900 text-gray-500 text-center py-6 mt-12">
-        <p>&copy; 2023 Zaapflow. Todos os direitos reservados.</p>
-         <p class="mt-2 text-sm">
-             <a href="#" class="text-yellow-400 hover:underline mx-2">Termos de Uso</a> |
-             <a href="#" class="text-yellow-400 hover:underline mx-2">Política de Privacidade</a>
-         </p>
-    </footer>
+                        // Attempt to extract code block
+                        const codeBlockMatch = aiResponseText.match(/```(?:\w+)?\n([\s\S]*?)\n```/);
+                        if (codeBlockMatch && codeBlockMatch[1]) {
+                            setCodeContent(codeBlockMatch[1].trim());
+                            const nonCodeText = aiResponseText.replace(codeBlockMatch[0], '').trim();
+                            if (nonCodeText) {
+                                console.log("Explicação da IA:", nonCodeText);
+                            }
+                        } else {
+                            console.log("Resposta da IA (apenas texto):", aiResponseText);
+                            setCodeContent("Não foi possível extrair um bloco de código. Resposta da IA: " + aiResponseText);
+                        }
+                    } else {
+                        console.error("Erro ao gerar código:", result);
+                        setCodeContent("Erro ao gerar código. Por favor, tente novamente.");
+                    }
+                }
+            } else { // appMode === 'chat'
+                if (isImageGenerationRequestInChat) {
+                    // Logic for image generation in chat mode
+                    const imagePrompt = currentPrompt.trim();
+                    if (!imagePrompt) {
+                        console.error("É necessário um prompt para gerar uma imagem no modo chat.");
+                        return; // Exit early if no prompt
+                    }
 
-    <script>
-        // JavaScript para mostrar o botão após 60 segundos
-        const buyButtonContainer = document.getElementById('buyButtonContainer');
-        const delay = 60000; // 60 segundos em milissegundos
+                    // Add user's image generation request to Firestore
+                    await addDoc(chatCollectionRef, { role: 'user', text: `Gerar imagem: "${imagePrompt}"`, timestamp: Date.now() });
 
-        // Usa setTimeout para adicionar a classe 'visible' após o delay
-        setTimeout(() => {
-            buyButtonContainer.classList.add('visible');
-        }, delay);
+                    // Payload for the image generation API
+                    const imagePayload = { instances: { prompt: imagePrompt }, parameters: { "sampleCount": 1 } };
+                    const imageApiKey = "";
+                    const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${imageApiKey}`;
 
-         // Adicionar Intersection Observer para animação de fade-in (opcional, se quiser animação ao rolar)
-         // O código atual já tem animações no carregamento usando CSS e 'animate-fade-in'
-         // Se quiser animação ao rolar, remova as classes 'animate-fade-in' do HTML
-         // e use um Observer como este:
-         /*
-         document.addEventListener("DOMContentLoaded", function() {
-             const elementsToAnimate = document.querySelectorAll('.section-to-animate'); // Adicione uma classe específica para Observer
+                    try {
+                        const imageResponse = await fetch(imageApiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(imagePayload)
+                        });
+                        const imageResult = await imageResponse.json();
+                        console.log("Resultado da API de geração de imagem (chat):", imageResult);
 
-             const observer = new IntersectionObserver((entries, observer) => {
-                 entries.forEach(entry => {
-                     if (entry.isIntersecting) {
-                         entry.target.classList.add('animate-fade-in-visible'); // Classe que aplica a animação
-                         observer.unobserve(entry.target); // Para animar apenas uma vez
-                     }
-                 });
-             }, {
-                 threshold: 0.1 // Porcentagem do elemento visível para disparar
-             });
+                        if (imageResult.predictions && imageResult.predictions.length > 0 && imageResult.predictions[0].bytesBase64Encoded) {
+                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
+                            // Add the generated image to Firestore
+                            await addDoc(chatCollectionRef, { role: 'model', image: imageUrl, timestamp: Date.now() });
+                        } else {
+                            console.error("Estrutura de resposta inesperada da API de geração de imagem (chat):", imageResult);
+                            await addDoc(chatCollectionRef, { role: 'model', text: "Desculpe, não consegui gerar a imagem. Por favor, tente novamente.", timestamp: Date.now() });
+                        }
+                    } catch (error) {
+                        console.error("Erro ao chamar a API de geração de imagem (chat):", error);
+                        await addDoc(chatCollectionRef, { role: 'model', text: "Ocorreu um erro ao gerar a imagem. Por favor, tente novamente.", timestamp: Date.now() });
+                    } finally {
+                        setIsGeneratingImageChat(false); // Clear chat image loading state
+                    }
+                } else { // Default text/image analysis for chat mode
+                    // Construct the user message for Firestore
+                    const userMessage = {
+                        role: 'user',
+                        text: currentPrompt,
+                        timestamp: Date.now(),
+                        image: selectedImageBase64 ? `data:${selectedImage.type};base64,${selectedImageBase64}` : null // Store full data URL for display
+                    };
+                    await addDoc(chatCollectionRef, userMessage);
+                    console.log("Mensagem do usuário adicionada ao Firestore:", userMessage);
 
-             elementsToAnimate.forEach(element => {
-                 observer.observe(element);
-             });
-         });
-         // E no CSS:
-         // .section-to-animate { opacity: 0; transform: translateY(20px); transition: opacity 1s ease-out, transform 1s ease-out; }
-         // .section-to-animate.animate-fade-in-visible { opacity: 1; transform: translateY(0); }
-         */
-
-         // Para este request, as animações no carregamento via CSS já atendem.
-         // Nenhuma alteração adicional de JS é necessária além do timer do botão.
-
-    </script>
-</body>
-</html>
+                    // Prepare chat history for the text generation API call
+                    const chatHistoryForApi = chatHistory.map(msg => {
+                        const parts = [];
+                        if (msg.te
