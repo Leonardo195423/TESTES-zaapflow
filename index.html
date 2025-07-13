@@ -1,300 +1,811 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DigitalMasters - Curso de Marketing Digital Avançado</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Meu Assistente de IA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom CSS for background animation and specific effects */
-        @keyframes fall {
-            0% {
-                transform: translateY(-100vh) rotateZ(0deg) scaleY(0.5);
-                opacity: 0;
-            }
-             20% {
-                 opacity: 0.4; /* Fade in */
-             }
-            80% {
-                 opacity: 0.4; /* Maintain opacity */
-             }
-            100% {
-                transform: translateY(100vh) rotateZ(180deg) scaleY(1); /* Fall downwards and subtly change scale */
-                opacity: 0; /* Fade out */
-            }
+        /* Estilos personalizados para a aplicação */
+        body {
+            font-family: 'Inter', sans-serif;
         }
-
-        .light-beam {
-            position: absolute;
-            width: 1px; /* Thin beam */
-            height: 120vh; /* Long beam */
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(192, 132, 252, 0.6), rgba(255, 255, 255, 0.1)); /* Subtle purple/white gradient */
-            filter: blur(0.5px); /* Soft edge */
-            animation: fall linear infinite;
-            pointer-events: none; /* Don't interfere with clicks */
-            z-index: 0; /* Behind content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
         }
-
-        /* Assign unique delays, positions, and durations to beams for randomness */
-        .beam-1 { left: 5%; animation-delay: 0s; animation-duration: 12s; }
-        .beam-2 { left: 15%; animation-delay: 3s; animation-duration: 15s; }
-        .beam-3 { left: 25%; animation-delay: 6s; animation-duration: 10s; }
-        .beam-4 { left: 35%; animation-delay: 1s; animation-duration: 14s; }
-        .beam-5 { left: 45%; animation-delay: 4s; animation-duration: 11s; }
-        .beam-6 { left: 55%; animation-delay: 7s; animation-duration: 13s; }
-        .beam-7 { left: 65%; animation-delay: 2s; animation-duration: 9s; }
-        .beam-8 { left: 75%; animation-delay: 5s; animation-duration: 16s; }
-        .beam-9 { left: 85%; animation-delay: 8s; animation-duration: 10s; }
-        .beam-10 { left: 95%; animation-delay: 0.5s; animation-duration: 12.5s; }
-        .beam-11 { left: 12%; animation-delay: 4.5s; animation-duration: 11.8s; }
-        .beam-12 { left: 88%; animation-delay: 1.5s; animation-duration: 14.2s; }
-        .beam-13 { left: 30%; animation-delay: 9s; animation-duration: 9.5s; }
-        .beam-14 { left: 70%; animation-delay: 2.5s; animation-duration: 15.1s; }
-        .beam-15 { left: 40%; animation-delay: 5.5s; animation-duration: 10.3s; }
-
-
-        /* Ensure content is above the background */
-        #content-wrapper {
-             position: relative;
-             z-index: 10; /* Higher than beams */
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
         }
-
-         /* Custom fade-in animation for sections (triggered on load in this simple example) */
-         @keyframes fadeIn {
-             0% { opacity: 0; transform: translateY(20px); }
-             100% { opacity: 1; transform: translateY(0); }
-         }
-
-         .animate-fade-in-section {
-             animation: fadeIn 0.8s ease-out forwards;
-             opacity: 0; /* Start invisible */
-         }
-
-         /* Add some delay for consecutive sections (requires JS for scroll-based trigger, applied here for simple sequence) */
-         .section-delay-1 { animation-delay: 0.2s; }
-         .section-delay-2 { animation-delay: 0.4s; }
-         .section-delay-3 { animation-delay: 0.6s; }
-         .section-delay-4 { animation-delay: 0.8s; }
-         .section-delay-5 { animation-delay: 1s; }
-         .section-delay-6 { animation-delay: 1.2s; }
-
-
-         /* Ensure body fills viewport height for hero section centering */
-         html, body {
-             height: 100%;
-         }
-         body {
-             display: flex;
-             flex-direction: column;
-         }
-         #content-wrapper {
-             flex: 1; /* Make content wrapper take available space */
-         }
-
-         /* Custom focus style for buttons for accessibility */
-         .focus-purple:focus {
-             outline: none;
-             box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.5); /* ring-purple-400 with transparency */
-         }
-
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Animação de carregamento (pontos a saltar) */
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        .animate-bounce-dot {
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        /* Ocultar elementos por defeito */
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 font-sans overflow-x-hidden relative min-h-screen">
+<body class="bg-gray-100">
 
-    <!-- Background Animation Container -->
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div class="light-beam beam-1"></div>
-        <div class="light-beam beam-2"></div>
-        <div class="light-beam beam-3"></div>
-        <div class="light-beam beam-4"></div>
-        <div class="light-beam beam-5"></div>
-        <div class="light-beam beam-6"></div>
-        <div class="light-beam beam-7"></div>
-        <div class="light-beam beam-8"></div>
-        <div class="light-beam beam-9"></div>
-        <div class="light-beam beam-10"></div>
-        <div class="light-beam beam-11"></div>
-        <div class="light-beam beam-12"></div>
-        <div class="light-beam beam-13"></div>
-        <div class="light-beam beam-14"></div>
-        <div class="light-beam beam-15"></div>
-         <!-- Add more beams for density if needed -->
-    </div>
-
-    <!-- Content Wrapper -->
-    <div id="content-wrapper">
-
-        <!-- Header -->
-        <header class="bg-gray-900 bg-opacity-90 backdrop-filter backdrop-blur-lg fixed w-full top-0 z-50 shadow-lg">
-            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <a href="#hero" class="text-2xl font-bold text-purple-400 hover:text-purple-300 transition duration-300 focus-purple">
-                     Digital<span class="text-white">Masters</span>
-                </a>
-                <nav class="hidden md:flex space-x-6 items-center">
-                    <a href="#hero" class="text-gray-300 hover:text-white transition duration-300 focus-purple">Início</a>
-                    <a href="#about" class="text-gray-300 hover:text-white transition duration-300 focus-purple">Sobre o Curso</a>
-                    <a href="#modules" class="text-gray-300 hover:text-white transition duration-300 focus-purple">Módulos</a>
-                    <a href="#cta-bottom" class="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition duration-300 transform hover:scale-105 focus-purple">Inscreva-se</a>
-                </nav>
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-300 focus-purple">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                </div>
+    <div id="app-container" class="flex flex-col h-screen bg-gray-100 font-sans antialiased text-gray-800">
+        <!-- Cabeçalho -->
+        <header class="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg rounded-b-xl flex justify-between items-center relative">
+            <button id="hamburger-button" class="p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white hidden" aria-label="Abrir menu de projetos">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <h1 class="text-3xl font-bold text-center flex-1">Meu Assistente de IA</h1>
+            <div class="flex space-x-2">
+                <button id="chat-mode-button" class="px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-white text-blue-700 shadow-md">
+                    Chat
+                </button>
+                <button id="dev-mode-button" class="px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-purple-500 text-white hover:bg-purple-600">
+                    Programador
+                </button>
             </div>
-            <!-- Mobile Menu -->
-            <div id="mobile-menu" class="md:hidden hidden bg-gray-800 bg-opacity-95 backdrop-filter backdrop-blur-lg absolute w-full py-2">
-                <a href="#hero" class="block px-6 py-3 text-gray-300 hover:text-white border-b border-gray-700 transition duration-300 focus-purple">Início</a>
-                <a href="#about" class="block px-6 py-3 text-gray-300 hover:text-white border-b border-gray-700 transition duration-300 focus-purple">Sobre o Curso</a>
-                <a href="#modules" class="block px-6 py-3 text-gray-300 hover:text-white border-b border-gray-700 transition duration-300 focus-purple">Módulos</a>
-                <a href="#cta-bottom" class="block px-6 py-3 text-purple-400 hover:text-purple-300 transition duration-300 focus-purple">Inscreva-se</a>
-            </div>
+            <p id="user-id-display" class="absolute bottom-1 right-4 text-xs opacity-70"></p>
         </header>
 
-        <!-- Hero Section -->
-        <section id="hero" class="relative h-screen flex items-center justify-center text-center overflow-hidden pt-16 md:pt-20">
-            <div class="relative z-10 p-8 rounded-lg bg-gray-900 bg-opacity-70 backdrop-filter backdrop-blur-lg max-w-4xl mx-auto animate-fade-in-section">
-                <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4 leading-tight drop-shadow-lg">
-                    Domine o <span class="text-purple-400">Marketing Digital</span> <br class="block md:hidden">do Zero ao Avançado
-                </h1>
-                <p class="text-lg md:text-xl text-gray-300 mb-8 drop-shadow-md">
-                    Transforme sua carreira e seu negócio com estratégias digitais que realmente funcionam. Aprenda com os melhores e alcance resultados incríveis.
-                </p>
-                <a href="#cta-bottom" class="inline-block px-8 py-4 bg-purple-600 text-white font-bold text-lg rounded-full hover:bg-purple-700 transition duration-300 transform hover:scale-105 focus-purple">
-                    Comece Agora!
-                </a>
+        <!-- Sidebar para o Modo Programador -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+        <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-xl font-bold">Meus Projetos</h2>
+                <button id="close-sidebar-button" class="p-1 rounded-full hover:bg-gray-700 transition duration-200" aria-label="Fechar menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
-        </section>
-
-        <!-- About Section -->
-        <section id="about" class="py-20 px-6 animate-fade-in-section section-delay-1">
-            <div class="container mx-auto max-w-4xl text-center">
-                <h2 class="text-3xl md:text-4xl font-bold text-purple-400 mb-8">Sobre o Curso DigitalMasters</h2>
-                <p class="text-base md:text-lg text-gray-300 leading-relaxed">
-                    Nosso curso foi cuidadosamente elaborado para fornecer uma base sólida e conhecimentos avançados em todas as áreas essenciais do marketing digital. Desde SEO e mídias sociais até funis de venda e análise de dados, você terá as ferramentas e estratégias necessárias para se destacar no mercado digital em constante evolução. Conteúdo prático, estudos de caso reais e suporte de especialistas para garantir seu sucesso. Desenvolvido para iniciantes que desejam entrar na área e para profissionais que buscam aprimorar suas habilidades.
-                </p>
+            <div id="projects-list" class="p-4 overflow-y-auto custom-scrollbar">
+                <p class="text-gray-400 text-sm">Nenhum projeto guardado ainda.</p>
             </div>
-        </section>
+        </div>
 
-        <!-- Modules Section -->
-        <section id="modules" class="py-20 px-6 bg-gray-800 bg-opacity-70 animate-fade-in-section section-delay-2">
-            <div class="container mx-auto max-w-6xl">
-                <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">O Que Você Vai Aprender</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Conteúdo Principal -->
+        <main id="main-content" class="flex-1 overflow-y-auto p-4"></main>
 
-                    <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center">💡</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Fundamentos Essenciais</h3>
-                        <p class="text-gray-300 text-center">Entenda o ecossistema digital, personas, jornada do cliente e objetivos de marketing.</p>
-                    </div>
-
-                    <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center">🔍</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">SEO Completo</h3>
-                        <p class="text-gray-300 text-center">Técnicas on-page e off-page, pesquisa de palavras-chave e auditoria de sites.</p>
-                    </div>
-
-                     <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center">📱</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Mídias Sociais Estratégicas</h3>
-                        <p class="text-gray-300 text-center">Estratégias para plataformas como Facebook, Instagram, LinkedIn, TikTok, etc.</p>
-                    </div>
-
-                    <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center">✉️</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Email Marketing & Automação</h3>
-                        <p class="text-gray-300 text-center">Construa listas, crie campanhas eficazes e automatize fluxos.</p>
-                    </div>
-
-                    <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center">📈</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Tráfego Pago (Ads)</h3>
-                        <p class="text-gray-300 text-center">Google Ads, Facebook Ads, e outras plataformas de publicidade online.</p>
-                    </div>
-
-                    <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center">📝</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Marketing de Conteúdo</h3>
-                        <p class="text-gray-300 text-center">Planejamento, criação e distribuição de conteúdo relevante para seu público.</p>
-                    </div>
-
-                     <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center"> funnel</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Funis de Venda & CRO</h3>
-                        <p class="text-gray-300 text-center">Construa funis que convertem e otimize suas páginas e processos.</p>
-                    </div>
-
-                    <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center"> analytics</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Web Analytics & Métricas</h3>
-                        <p class="text-gray-300 text-center">Use Google Analytics e outras ferramentas para medir resultados e tomar decisões baseadas em dados.</p>
-                    </div>
-
-                     <div class="bg-gray-900 rounded-lg p-6 shadow-xl transform hover:scale-105 transition duration-300 focus-purple">
-                        <div class="text-purple-400 text-4xl mb-4 text-center"> project</div>
-                        <h3 class="text-xl font-semibold text-white mb-3 text-center">Projeto Prático Final</h3>
-                        <p class="text-gray-300 text-center">Aplique todo o conhecimento em um projeto real ou simulado para consolidar o aprendizado.</p>
-                    </div>
-                </div>
+        <!-- Rodapé com a área de input -->
+        <footer class="p-4 bg-white border-t border-gray-200 shadow-lg rounded-t-xl">
+            <div id="image-preview-container" class="hidden items-center mb-3 p-2 bg-gray-100 rounded-lg shadow-inner">
+                <img id="image-preview-img" src="" alt="Pré-visualização da imagem selecionada" class="w-16 h-16 object-cover rounded-md mr-3"/>
+                <span id="image-preview-name" class="text-sm text-gray-700 truncate flex-1"></span>
+                <button id="clear-image-button" class="ml-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-label="Remover imagem">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
-        </section>
-
-        <!-- Call to Action Section -->
-        <section id="cta-bottom" class="py-20 px-6 text-center animate-fade-in-section section-delay-3">
-            <div class="container mx-auto max-w-3xl">
-                <h2 class="text-3xl md:text-4xl font-bold text-purple-400 mb-8">Pronto para Impulsionar Sua Carreira e Negócio?</h2>
-                <p class="text-lg md:text-xl text-gray-300 mb-10">
-                    Não perca a chance de se tornar um mestre do marketing digital. Vagas limitadas! Junte-se à nossa comunidade de sucesso.
-                </p>
-                 <a href="#" class="inline-block px-10 py-5 bg-purple-600 text-white font-bold text-xl rounded-full hover:bg-purple-700 transition duration-300 transform hover:scale-105 focus-purple">
-                    Inscreva-se Agora e Garanta Sua Vaga!
-                </a>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="bg-gray-900 bg-opacity-90 backdrop-filter backdrop-blur-lg py-10 px-6 mt-auto">
-            <div class="container mx-auto text-center text-gray-400">
-                <p>&copy; 2023 DigitalMasters. Todos os direitos reservados.</p>
-                <div class="flex flex-wrap justify-center space-x-4 md:space-x-6 mt-4 text-sm">
-                    <a href="#" class="hover:text-white transition duration-300 focus-purple">Política de Privacidade</a>
-                    <a href="#" class="hover:text-white transition duration-300 focus-purple">Termos de Serviço</a>
-                    <a href="#" class="hover:text-white transition duration-300 focus-purple">Contato</a>
-                </div>
+            <div class="flex items-end space-x-3">
+                <input type="file" accept="image/*" id="file-input" class="hidden" />
+                <button id="attach-image-button" class="p-3 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105" aria-label="Anexar imagem">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </button>
+                <textarea id="prompt-input" class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20 custom-scrollbar" placeholder="Digite sua mensagem aqui..."></textarea>
+                <button id="generate-image-dev-button" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105 hidden" title="Gerar Imagem">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                </button>
+                <button id="send-button" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105" title="Enviar Mensagem">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
             </div>
         </footer>
+    </div>
 
-    </div> <!-- End Content Wrapper -->
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, addDoc, onSnapshot, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <!-- Simple JS for Mobile Menu Toggle -->
-    <script>
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
+        // --- VARIÁVEIS DE ESTADO GLOBAIS ---
+        let appMode = 'chat'; // 'chat' ou 'developer'
+        let chatHistory = [];
+        let projects = [];
+        let codeHistory = [];
+        let historyPointer = -1;
+        let isLoading = false;
+        let selectedImage = null;
+        let selectedImageBase64 = null;
+        let generationProgress = 0;
+        let progressInterval = null;
 
-        mobileMenuButton.onclick = function() {
-            mobileMenu.classList.toggle('hidden');
-             // Toggle aria-expanded for accessibility
-            const expanded = mobileMenuButton.getAttribute('aria-expanded') === 'true' || false;
-            mobileMenuButton.setAttribute('aria-expanded', !expanded);
-        };
+        // Instâncias do Firebase
+        let db, auth, userId, appId;
+        let unsubscribeChat = null; // Para anular a inscrição do listener do chat
 
-         // Close mobile menu when a link is clicked
-        document.querySelectorAll('#mobile-menu a').forEach(item => {
-            item.onclick = function() {
-                mobileMenu.classList.add('hidden');
-                 mobileMenuButton.setAttribute('aria-expanded', false);
+        // --- ELEMENTOS DO DOM ---
+        const mainContent = document.getElementById('main-content');
+        const promptInput = document.getElementById('prompt-input');
+        const sendButton = document.getElementById('send-button');
+        const chatModeButton = document.getElementById('chat-mode-button');
+        const devModeButton = document.getElementById('dev-mode-button');
+        const hamburgerButton = document.getElementById('hamburger-button');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebarButton = document.getElementById('close-sidebar-button');
+        const projectsList = document.getElementById('projects-list');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const fileInput = document.getElementById('file-input');
+        const attachImageButton = document.getElementById('attach-image-button');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreviewImg = document.getElementById('image-preview-img');
+        const imagePreviewName = document.getElementById('image-preview-name');
+        const clearImageButton = document.getElementById('clear-image-button');
+        const generateImageDevButton = document.getElementById('generate-image-dev-button');
+        
+        // --- TEMPLATES HTML ---
+        const chatViewTemplate = `
+            <div id="chat-history-container" class="space-y-4 h-full custom-scrollbar">
+                <div class="flex justify-center items-center h-full">
+                    <p class="text-gray-500 text-lg">Comece a conversar com a IA!</p>
+                </div>
+            </div>
+            <div id="messages-end-ref"></div>
+        `;
+
+        const developerViewTemplate = `
+            <div class="flex-1 flex flex-col lg:flex-row h-full space-y-4 lg:space-y-0 lg:space-x-4">
+                <!-- Editor de Código e Controles -->
+                <div class="flex-1 flex flex-col bg-white rounded-lg shadow-md p-4">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">Editor de Código</h2>
+                    <div class="flex space-x-3 mb-4 items-stretch">
+                        <select id="code-type-select" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="html">HTML</option>
+                            <option value="react">React</option>
+                            <option value="javascript">JavaScript</option>
+                        </select>
+                        <input type="text" id="project-name-input" placeholder="Nome do Projeto" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                        <button id="save-project-button" class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center min-w-[120px]">Guardar</button>
+                        <button id="undo-button" class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]" title="Desfazer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 12h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2z" /></svg> Desfazer
+                        </button>
+                        <button id="copy-code-button" class="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out relative flex items-center justify-center min-w-[120px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V15m-2.586 2.586a1 1 0 00.707.293h3.414a1 1 0 00.707-.293l3.414-3.414a1 1 0 00.293-.707V9.414a1 1 0 00-.293-.707L15.414 4.293A1 1 0 0014.707 4H12a2 2 0 00-2 2v2" /></svg> Copiar Código
+                            <span id="copy-message" class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap hidden"></span>
+                        </button>
+                    </div>
+                    <textarea id="code-content-textarea" class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none custom-scrollbar font-mono text-sm" placeholder="Escreva o seu código aqui..."></textarea>
+                </div>
+                <!-- Área de Pré-visualização ao Vivo -->
+                <div class="flex-1 flex flex-col bg-white rounded-lg shadow-md p-4">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">Pré-visualização ao Vivo</h2>
+                    <iframe id="preview-iframe" class="flex-1 w-full border border-gray-300 rounded-lg bg-white" title="Pré-visualização de Código"></iframe>
+                    <div id="dev-image-generated-container" class="mt-4 p-4 bg-gray-50 rounded-lg shadow-inner hidden">
+                        <h3 class="text-lg font-semibold mb-2 text-gray-700">Imagem Gerada</h3>
+                        <div id="dev-image-loading" class="flex justify-center items-center h-32">
+                            <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+                            <p class="ml-3 text-gray-600">Gerando imagem...</p>
+                        </div>
+                        <img id="dev-image-generated" src="" alt="Imagem Gerada pela IA" class="max-w-full h-auto rounded-md shadow-sm hidden" />
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO E MANIPULAÇÃO DO DOM ---
+
+        /**
+         * Renderiza o histórico do chat no DOM.
+         */
+        function renderChatHistory() {
+            const container = document.getElementById('chat-history-container');
+            if (!container) return;
+
+            if (chatHistory.length === 0 && !isLoading) {
+                container.innerHTML = `
+                    <div class="flex justify-center items-center h-full">
+                        <p class="text-gray-500 text-lg">Comece a conversar com a IA!</p>
+                    </div>`;
+                return;
             }
+            
+            let html = '';
+            chatHistory.forEach(message => {
+                const isUser = message.role === 'user';
+                html += `
+                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-xl p-3 rounded-lg shadow-md ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none'}">
+                            ${message.text ? `<p class="whitespace-pre-wrap">${message.text}</p>` : ''}
+                            ${message.image ? `<img src="${message.image}" alt="Imagem" class="mt-2 rounded-md max-w-full h-auto" style="max-height: 200px;" />` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (isLoading) {
+                html += `
+                    <div class="flex justify-start">
+                        <div class="max-w-xl p-3 rounded-lg shadow-md bg-white text-gray-800 rounded-bl-none">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce-dot" style="animation-delay: 0s;"></div>
+                                <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce-dot" style="animation-delay: 0.1s;"></div>
+                                <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            document.getElementById('messages-end-ref')?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /**
+         * Renderiza a lista de projetos na sidebar.
+         */
+        function renderProjectsList() {
+            if (projects.length === 0) {
+                projectsList.innerHTML = `<p class="text-gray-400 text-sm">Nenhum projeto guardado ainda.</p>`;
+                return;
+            }
+            
+            const ul = document.createElement('ul');
+            projects.forEach(project => {
+                const li = document.createElement('li');
+                li.className = "py-2 border-b border-gray-700 last:border-b-0";
+                li.innerHTML = `
+                    <button data-project-id="${project.id}" class="w-full text-left text-white hover:text-blue-400 transition duration-200 truncate">
+                        <span class="font-medium">${project.name}</span>
+                        <span class="text-xs text-gray-400"> (${project.type})</span>
+                    </button>
+                `;
+                ul.appendChild(li);
+            });
+            projectsList.innerHTML = '';
+            projectsList.appendChild(ul);
+        }
+
+        /**
+         * Atualiza a interface do utilizador com base no modo da aplicação ('chat' ou 'developer').
+         */
+        function updateUIForMode() {
+            if (appMode === 'chat') {
+                // Configuração do modo Chat
+                mainContent.innerHTML = chatViewTemplate;
+                chatModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-white text-blue-700 shadow-md';
+                devModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-purple-500 text-white hover:bg-purple-600';
+                hamburgerButton.classList.add('hidden');
+                promptInput.placeholder = "Digite sua mensagem aqui...";
+                sendButton.title = "Enviar Mensagem";
+                generateImageDevButton.classList.add('hidden');
+                renderChatHistory();
+                subscribeToChatHistory();
+            } else {
+                // Configuração do modo Programador
+                if (unsubscribeChat) unsubscribeChat(); // Anular subscrição do chat
+                mainContent.innerHTML = developerViewTemplate;
+                devModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-white text-purple-700 shadow-md';
+                chatModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-blue-500 text-white hover:bg-blue-600';
+                hamburgerButton.classList.remove('hidden');
+                promptInput.placeholder = "Descreva o código que deseja gerar, depurar ou refinar...";
+                sendButton.title = "Pedir Ajuda à IA";
+                generateImageDevButton.classList.remove('hidden');
+                addDeveloperEventListeners();
+                loadProjects();
+            }
+            updateButtonStates();
+        }
+
+        /**
+         * Atualiza o estado (ativado/desativado) dos botões.
+         */
+        function updateButtonStates() {
+            const promptIsEmpty = !promptInput.value.trim();
+            const imageIsSelected = !!selectedImage;
+
+            sendButton.disabled = isLoading || (appMode === 'chat' && promptIsEmpty && !imageIsSelected) || (appMode === 'developer' && promptIsEmpty && !imageIsSelected);
+            generateImageDevButton.disabled = isLoading || promptIsEmpty;
+            attachImageButton.disabled = isLoading;
+            promptInput.disabled = isLoading;
+        }
+
+        // --- FUNÇÕES DE LÓGICA DA APLICAÇÃO ---
+
+        /**
+         * Muda o modo da aplicação.
+         * @param {string} newMode - O novo modo ('chat' ou 'developer').
+         */
+        function setAppMode(newMode) {
+            if (appMode === newMode) return;
+            appMode = newMode;
+            updateUIForMode();
+        }
+
+        /**
+         * Limpa a imagem selecionada.
+         */
+        function clearSelectedImage() {
+            selectedImage = null;
+            selectedImageBase64 = null;
+            fileInput.value = '';
+            imagePreviewContainer.classList.add('hidden');
+            updateButtonStates();
+        }
+
+        /**
+         * Executa o código na iframe de pré-visualização.
+         */
+        function runCode() {
+            const iframe = document.getElementById('preview-iframe');
+            if (!iframe) return;
+
+            const codeContent = document.getElementById('code-content-textarea').value;
+            const codeType = document.getElementById('code-type-select').value;
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            if (codeType === 'html') {
+                doc.write(codeContent);
+            } else if (codeType === 'javascript') {
+                doc.write(`<html><body><script>${codeContent}<\/script></body></html>`);
+            } else if (codeType === 'react') {
+                const reactHtml = `
+                    <!DOCTYPE html>
+                    <html><head>
+                        <title>Pré-visualização React</title>
+                        <script src="https://unpkg.com/react/umd/react.development.js"><\/script>
+                        <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"><\/script>
+                        <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+                        <script src="https://cdn.tailwindcss.com"><\/script>
+                        <style>body { margin: 0; font-family: 'Inter', sans-serif; } #root { height: 100vh; width: 100vw; }</style>
+                    </head><body>
+                        <div id="root"></div>
+                        <script type="text/babel">
+                            ${codeContent}
+                            // Assegura que o componente App é renderizado
+                            if (typeof App !== 'undefined') {
+                                ReactDOM.render(<App />, document.getElementById('root'));
+                            }
+                        <\/script>
+                    </body></html>`;
+                doc.write(reactHtml);
+            }
+            doc.close();
+        }
+        
+        /**
+         * Copia o código do editor para a área de transferência.
+         */
+        function copyCodeToClipboard() {
+            const codeContentEl = document.getElementById('code-content-textarea');
+            const copyMessageEl = document.getElementById('copy-message');
+            if (!codeContentEl || !copyMessageEl) return;
+
+            // Cria um textarea temporário
+            const textarea = document.createElement('textarea');
+            textarea.value = codeContentEl.value;
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px'; // Move-o para fora do ecrã
+            document.body.appendChild(textarea);
+            
+            try {
+                textarea.select();
+                document.execCommand('copy'); // Comando de cópia
+                copyMessageEl.textContent = 'Código copiado!';
+                copyMessageEl.classList.remove('hidden');
+                setTimeout(() => copyMessageEl.classList.add('hidden'), 2000);
+            } catch (err) {
+                console.error('Falha ao copiar o código: ', err);
+                copyMessageEl.textContent = 'Falha ao copiar!';
+                copyMessageEl.classList.remove('hidden');
+                setTimeout(() => copyMessageEl.classList.add('hidden'), 2000);
+            } finally {
+                // Remove o textarea temporário
+                document.body.removeChild(textarea);
+            }
+        }
+
+        /**
+         * Guarda o projeto atual no Firestore.
+         */
+        async function saveProject() {
+            const projectName = document.getElementById('project-name-input').value.trim();
+            const codeContent = document.getElementById('code-content-textarea').value.trim();
+            const codeType = document.getElementById('code-type-select').value;
+
+            if (!projectName || !codeContent || !db || !userId) {
+                console.error("Nome do projeto, conteúdo do código ou dados do utilizador/DB em falta.");
+                alert("Por favor, preencha o nome do projeto e o código antes de guardar.");
+                return;
+            }
+            const projectsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/projects`);
+            try {
+                await addDoc(projectsCollectionRef, {
+                    name: projectName,
+                    code: codeContent,
+                    type: codeType,
+                    timestamp: Date.now()
+                });
+                alert("Projeto guardado com sucesso!");
+                loadProjects();
+            } catch (error) {
+                console.error("Erro ao guardar projeto:", error);
+                alert("Ocorreu um erro ao guardar o projeto.");
+            }
+        }
+
+        /**
+         * Carrega os projetos do utilizador a partir do Firestore.
+         */
+        async function loadProjects() {
+            if (!db || !userId) return;
+            const projectsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/projects`);
+            const q = query(projectsCollectionRef, orderBy('timestamp', 'desc'));
+
+            try {
+                const snapshot = await getDocs(q);
+                projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderProjectsList();
+            } catch (error) {
+                console.error("Erro ao carregar projetos:", error);
+            }
+        }
+
+        /**
+         * Seleciona um projeto para carregar no editor.
+         */
+        function selectProject(project) {
+            addStateToHistory();
+            document.getElementById('code-content-textarea').value = project.code;
+            document.getElementById('code-type-select').value = project.type;
+            document.getElementById('project-name-input').value = project.name;
+            document.getElementById('dev-image-generated-container').classList.add('hidden');
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+            runCode();
+        }
+
+        /**
+         * Adiciona o estado atual do código ao histórico para a funcionalidade de anular.
+         */
+        function addStateToHistory() {
+            const codeContent = document.getElementById('code-content-textarea').value;
+            const codeType = document.getElementById('code-type-select').value;
+            const projectName = document.getElementById('project-name-input').value;
+
+            const newHistory = codeHistory.slice(0, historyPointer + 1);
+            const MAX_HISTORY_SIZE = 20;
+            if (newHistory.length >= MAX_HISTORY_SIZE) {
+                newHistory.shift();
+            }
+            newHistory.push({ codeContent, codeType, projectName });
+            codeHistory = newHistory;
+            historyPointer = newHistory.length - 1;
+            document.getElementById('undo-button').disabled = historyPointer <= 0;
+        }
+
+        /**
+         * Anula a última alteração de código.
+         */
+        function undoCodeChange() {
+            if (historyPointer > 0) {
+                historyPointer--;
+                const previousState = codeHistory[historyPointer];
+                document.getElementById('code-content-textarea').value = previousState.codeContent;
+                document.getElementById('code-type-select').value = previousState.codeType;
+                document.getElementById('project-name-input').value = previousState.projectName;
+                document.getElementById('dev-image-generated-container').classList.add('hidden');
+                document.getElementById('undo-button').disabled = historyPointer <= 0;
+                runCode();
+            }
+        }
+
+        /**
+         * Envia uma mensagem para a IA (texto, código ou imagem).
+         * @param {string} mode - O tipo de pedido ('text', 'code', 'image', 'generateImageDev').
+         */
+        async function sendMessage(mode) {
+            const currentPrompt = promptInput.value.trim();
+            if (isLoading || !db || !userId) return;
+            if ((appMode === 'chat' && !currentPrompt && !selectedImage) || (appMode === 'developer' && !currentPrompt && mode !== 'generateImageDev')) return;
+
+            isLoading = true;
+            updateButtonStates();
+
+            const chatCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/chatHistory`);
+
+            try {
+                if (appMode === 'developer') {
+                    const codeTextarea = document.getElementById('code-content-textarea');
+                    if (mode === 'generateImageDev') {
+                        const devImgContainer = document.getElementById('dev-image-generated-container');
+                        const devImgLoading = document.getElementById('dev-image-loading');
+                        const devImgGenerated = document.getElementById('dev-image-generated');
+                        
+                        devImgContainer.classList.remove('hidden');
+                        devImgLoading.classList.remove('hidden');
+                        devImgGenerated.classList.add('hidden');
+
+                        const imagePayload = { instances: { prompt: currentPrompt }, parameters: { "sampleCount": 1 } };
+                        const imageApiKey = ""; 
+                        const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${imageApiKey}`;
+                        const imageResponse = await fetch(imageApiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(imagePayload)
+                        });
+                        const imageResult = await imageResponse.json();
+
+                        if (imageResult.predictions && imageResult.predictions[0].bytesBase64Encoded) {
+                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
+                            devImgGenerated.src = imageUrl;
+                            devImgGenerated.classList.remove('hidden');
+                        } else {
+                            console.error("Erro ao gerar imagem no modo programador:", imageResult);
+                            devImgContainer.classList.add('hidden');
+                        }
+                        devImgLoading.classList.add('hidden');
+
+                    } else { // Geração/Refinamento de Código
+                        generationProgress = 0;
+                        if (progressInterval) clearInterval(progressInterval);
+
+                        progressInterval = setInterval(() => {
+                            if (generationProgress < 99) {
+                                generationProgress++;
+                                codeTextarea.value = `Gerando código... ${generationProgress}%`;
+                            } else {
+                                clearInterval(progressInterval);
+                                progressInterval = null;
+                            }
+                        }, 100);
+                        
+                        const codeContent = document.getElementById('code-content-textarea').value;
+                        const codeType = document.getElementById('code-type-select').value;
+                        let designInstruction = "Garanta que o design é robusto, avançado e esteticamente refinado, utilizando as classes do Tailwind CSS para um estilo moderno e responsivo.";
+                        
+                        const developerPromptParts = [
+                            { text: `Dado o seguinte código de tipo '${codeType}':\n\n\`\`\`${codeType}\n${codeContent}\n\`\`\`\n\n` },
+                            { text: `E o pedido do utilizador: '${currentPrompt}'. ` }
+                        ];
+                        if (selectedImageBase64) {
+                            developerPromptParts.push({ text: 'Analise a imagem fornecida para referência.' });
+                            developerPromptParts.push({ inlineData: { mimeType: selectedImage.type, data: selectedImageBase64 } });
+                        }
+                        developerPromptParts.push({ text: `\n\nForneça APENAS o código puro (sem markdown extra). ${designInstruction}` });
+
+                        const payload = { contents: [{ role: "user", parts: developerPromptParts }] };
+                        const apiKey = "";
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+                        
+                        clearInterval(progressInterval);
+                        progressInterval = null;
+
+                        if (result.candidates && result.candidates[0].content.parts[0].text) {
+                            let aiResponseText = result.candidates[0].content.parts[0].text;
+                            const codeBlockMatch = aiResponseText.match(/```(?:\w+)?\n([\s\S]*?)\n```/);
+                            if (codeBlockMatch && codeBlockMatch[1]) {
+                                codeTextarea.value = codeBlockMatch[1].trim();
+                            } else {
+                                codeTextarea.value = aiResponseText;
+                            }
+                            runCode();
+                            addStateToHistory();
+                        } else {
+                            codeTextarea.value = "Erro ao gerar código. Por favor, tente novamente.";
+                        }
+                    }
+                } else { // appMode === 'chat'
+                    renderChatHistory(); 
+                    
+                    if (mode === 'image') {
+                        await addDoc(chatCollectionRef, { role: 'user', text: `Gerar imagem: "${currentPrompt}"`, timestamp: Date.now() });
+                        
+                        const imagePayload = { instances: { prompt: currentPrompt }, parameters: { "sampleCount": 1 } };
+                        const imageApiKey = "";
+                        const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${imageApiKey}`;
+                        const imageResponse = await fetch(imageApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(imagePayload) });
+                        const imageResult = await imageResponse.json();
+
+                        if (imageResult.predictions && imageResult.predictions[0].bytesBase64Encoded) {
+                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
+                            await addDoc(chatCollectionRef, { role: 'model', image: imageUrl, timestamp: Date.now() });
+                        } else {
+                            await addDoc(chatCollectionRef, { role: 'model', text: "Desculpe, não consegui gerar a imagem.", timestamp: Date.now() });
+                        }
+                    } else { // modo 'text'
+                        const userMessage = {
+                            role: 'user',
+                            text: currentPrompt,
+                            timestamp: Date.now(),
+                            image: selectedImageBase64 ? `data:${selectedImage.type};base64,${selectedImageBase64}` : null
+                        };
+                        await addDoc(chatCollectionRef, userMessage);
+                        
+                        const chatHistoryForApi = chatHistory.map(msg => ({ role: msg.role, parts: [{ text: msg.text || '' }] }));
+                        const currentUserPromptParts = [{ text: currentPrompt }];
+                        if (selectedImageBase64) {
+                            currentUserPromptParts.push({ inlineData: { mimeType: selectedImage.type, data: selectedImageBase64 } });
+                        }
+                        chatHistoryForApi.push({ role: 'user', parts: currentUserPromptParts });
+
+                        const payload = { contents: chatHistoryForApi };
+                        const apiKey = "";
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        const result = await response.json();
+
+                        if (result.candidates && result.candidates[0].content.parts[0].text) {
+                            await addDoc(chatCollectionRef, { role: 'model', text: result.candidates[0].content.parts[0].text, timestamp: Date.now() });
+                        } else {
+                            await addDoc(chatCollectionRef, { role: 'model', text: "Desculpe, não consegui gerar uma resposta.", timestamp: Date.now() });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao enviar mensagem ou chamar a API:", error);
+                if (progressInterval) clearInterval(progressInterval);
+                if (appMode === 'chat') {
+                    await addDoc(chatCollectionRef, { role: 'model', text: "Ocorreu um erro.", timestamp: Date.now() });
+                } else {
+                    document.getElementById('code-content-textarea').value = "Ocorreu um erro ao comunicar com a IA.";
+                }
+            } finally {
+                if (progressInterval) clearInterval(progressInterval);
+                isLoading = false;
+                promptInput.value = '';
+                clearSelectedImage();
+                updateButtonStates();
+                if(appMode === 'chat') renderChatHistory();
+            }
+        }
+        
+        /**
+         * Subscreve às atualizações em tempo real do histórico do chat no Firestore.
+         */
+        function subscribeToChatHistory() {
+            if (unsubscribeChat) unsubscribeChat(); // Anular subscrição anterior
+            if (!db || !userId) return;
+
+            const chatCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/chatHistory`);
+            const q = query(chatCollectionRef, orderBy('timestamp'));
+
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                chatHistory = snapshot.docs.map(doc => doc.data());
+                renderChatHistory();
+            }, (error) => {
+                console.error("Erro ao obter histórico do chat:", error);
+            });
+        }
+
+        // --- INICIALIZAÇÃO E LISTENERS DE EVENTOS ---
+        
+        /**
+         * Adiciona listeners de eventos para os elementos do modo programador.
+         */
+        function addDeveloperEventListeners() {
+            document.getElementById('save-project-button')?.addEventListener('click', saveProject);
+            document.getElementById('undo-button')?.addEventListener('click', undoCodeChange);
+            document.getElementById('copy-code-button')?.addEventListener('click', copyCodeToClipboard);
+            document.getElementById('code-content-textarea')?.addEventListener('input', runCode);
+            document.getElementById('code-type-select')?.addEventListener('change', runCode);
+            document.getElementById('code-content-textarea')?.addEventListener('input', addStateToHistory);
+        }
+
+        /**
+         * Inicializa a aplicação quando o DOM está carregado.
+         */
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicialização do Firebase
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                    } else {
+                        userId = crypto.randomUUID();
+                    }
+                    userIdDisplay.textContent = `ID do Utilizador: ${userId}`;
+                    updateUIForMode(); // Chamar aqui para garantir que o userId está definido
+                });
+
+            } catch (error) {
+                console.error("Erro ao inicializar o Firebase:", error);
+                alert("Não foi possível conectar aos nossos serviços. Por favor, atualize a página.");
+            }
+
+            // Listeners de eventos globais
+            chatModeButton.addEventListener('click', () => setAppMode('chat'));
+            devModeButton.addEventListener('click', () => setAppMode('developer'));
+            
+            hamburgerButton.addEventListener('click', () => {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+            });
+            closeSidebarButton.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            });
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            });
+
+            sendButton.addEventListener('click', () => sendMessage(appMode === 'chat' ? 'text' : 'code'));
+            generateImageDevButton.addEventListener('click', () => sendMessage('generateImageDev'));
+
+            promptInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage(appMode === 'chat' ? 'text' : 'code');
+                }
+            });
+            promptInput.addEventListener('input', updateButtonStates);
+            
+            attachImageButton.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedImage = file;
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        selectedImageBase64 = reader.result.split(',')[1];
+                        imagePreviewImg.src = reader.result;
+                        imagePreviewName.textContent = file.name;
+                        imagePreviewContainer.classList.remove('hidden');
+                        updateButtonStates();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            clearImageButton.addEventListener('click', clearSelectedImage);
+
+            projectsList.addEventListener('click', (e) => {
+                const button = e.target.closest('button[data-project-id]');
+                if (button) {
+                    const projectId = button.dataset.projectId;
+                    const project = projects.find(p => p.id === projectId);
+                    if (project) {
+                        selectProject(project);
+                    }
+                }
+            });
+            
+            // Estado inicial da UI
+            updateUIForMode();
         });
-
-         // Close mobile menu when clicking outside (optional)
-         document.addEventListener('click', function(event) {
-             if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target) && !mobileMenu.classList.contains('hidden')) {
-                 mobileMenu.classList.add('hidden');
-                 mobileMenuButton.setAttribute('aria-expanded', false);
-             }
-         });
     </script>
-
 </body>
 </html>
