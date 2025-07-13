@@ -218,7 +218,8 @@
                 }
             };
 
-            const apiKey = ""; // A API key será fornecida pelo ambiente Canvas
+            // ATENÇÃO: SUA CHAVE DE API FOI INSERIDA AQUI!
+            const apiKey = "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"; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -247,6 +248,7 @@
                     const aiBenefitsList = jsonResponse.benefits_list || ["Benefício 1", "Benefício 2", "Benefício 3"];
                     const aiOfferDetails = jsonResponse.offer_details_text || "Detalhes da oferta não gerados.";
                     const aiCallToAction = jsonResponse.call_to_action_text || "Saiba Mais!";
+                    // As variáveis aiTargetAudience e aiProblemSolved não são usadas diretamente no HTML gerado, mas são úteis para o prompt da IA.
                     const aiTargetAudience = jsonResponse.target_audience_summary || "público-alvo";
                     const aiProblemSolved = jsonResponse.problem_solved_summary || "problema";
 
