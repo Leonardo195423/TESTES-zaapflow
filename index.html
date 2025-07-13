@@ -1,125 +1,245 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head>
+<html lang="pt-BR">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sua Página de Vendas</title>
-    <style>h1 { color: #d97706; font-size: 2.8rem; margin-bottom: 15px; } p { font-size: 1.2rem; line-height: 1.8; margin-bottom: 20px; } .highlight { color: #ef4444; font-weight: bold; } button:hover { background-color: #d97706; }</style>
+    <title>Zaapflow - Crie Páginas de Vendas Estilo WhatsApp</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Paleta de cores customizada para amarelo neon e efeitos de brilho */
+        /* Usando text-shadow e box-shadow para o efeito glow */
+        .glow {
+            text-shadow: 0 0 5px #facc15, 0 0 10px #facc15, 0 0 15px #facc15, 0 0 20px #facc15; /* Usando yellow-400 */
+        }
+         .glow-button {
+            box-shadow: 0 0 5px #facc15, 0 0 15px #facc15, 0 0 30px #facc15; /* Usando yellow-400 */
+         }
+
+        /* Responsividade para o contêiner do vídeo */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* Proporção 16:9 */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Keyframes para Animação de Fade-in com leve deslocamento */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+         /* Keyframes para Animação de Brilho Pulsante no Botão */
+         @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 5px #facc15, 0 0 15px #facc15, 0 0 30px #facc15; }
+            50% { box-shadow: 0 0 10px #facc15, 0 0 25px #facc15, 0 0 50px #facc15; }
+        }
+
+        /* Aplica estado inicial e animação para elementos com animate-fade-in */
+        .animate-fade-in {
+            opacity: 0; /* Começa invisível */
+            transform: translateY(20px); /* Começa ligeiramente abaixo */
+            animation: fadeIn 1s ease-out forwards; /* Aplica a animação */
+        }
+
+        /* Classes utilitárias de delay para animação de fade-in */
+        .animate-fade-in.delay-200 { animation-delay: 0.2s; }
+        .animate-fade-in.delay-300 { animation-delay: 0.3s; }
+        .animate-fade-in.delay-500 { animation-delay: 0.5s; }
+        .animate-fade-in.delay-700 { animation-delay: 0.7s; }
+        .animate-fade-in.delay-900 { animation-delay: 0.9s; }
+        .animate-fade-in.delay-1000 { animation-delay: 1.0s; }
+
+        /* Aplica animação de brilho pulsante */
+        .animate-pulse-glow {
+            animation: pulseGlow 2s infinite;
+        }
+
+        /* Oculta o contêiner do botão inicialmente e adiciona transição */
+        #buyButtonContainer {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        }
+        /* Classe para tornar o contêiner visível */
+        #buyButtonContainer.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
 </head>
-<body>
-    <div class=""><br draggable="true"><!-- Container principal que agora cobre a área do corpo com fundo preto -->
-    <div style="padding: 20px; text-align: center; background-color: #000000; color: #cccccc;" draggable="true" id="main-content-area">
+<body class="bg-black text-gray-100 font-sans">
 
-        <!-- Título do Produto -->
-        <h1 style="color: #eeeeee; margin-bottom: 15px; font-size: 2.5rem;" draggable="true" id="zaapflow-headline">
-            ZaapFlow
-        </h1>
+    <!-- Wrapper principal com contêiner e padding -->
+    <div class="container mx-auto px-4 py-8">
 
-        <!-- Subtítulo/Benefício Principal -->
-        <h2 style="color: #dddddd; margin-bottom: 30px; font-size: 1.5rem;" draggable="true" id="zaapflow-subheadline">
-            Crie Páginas de Vendas Estilo WhatsApp e Aumente Sua Conversão em <span style="color: #10b981; font-weight: bold;">10x Mais</span>!
-        </h2>
+        <!-- Seção de Cabeçalho/Herói -->
+        <header class="text-center mb-12 animate-fade-in">
+            <h1 class="text-4xl md:text-6xl font-bold text-yellow-400 mb-4 glow">Zaapflow</h1>
+            <p class="text-xl md:text-2xl text-gray-300">Crie Páginas de Vendas Incríveis Estilo WhatsApp em Minutos!</p>
+        </header>
 
-        <!-- Container do Vídeo com Moldura Neon Amarela -->
-        <!-- Este container agora também abriga a barra de progresso -->
-        <div style="border: 4px solid #ffea00;  padding: 10px; background-color: rgba(255, 234, 0, 0.05); margin: 0 auto; max-width: 800px; position: relative; padding-bottom: calc(56.25% + 35px); /* Ajusta padding para a barra de progresso + um pouco de espaço (altura da barra + margem) */ height: 0; overflow: hidden; border-radius: 8px;" draggable="true" id="zaapflow-video-container">
-
-            <!-- Player de Vídeo (VSL) -->
-            <!-- 'controls=0' remove os controles nativos do YouTube -->
-            <!-- 'enablejsapi=1' e o 'id="youtube-player"' são essenciais para o JavaScript controlar a barra -->
-            <iframe id="youtube-player" src="https://www.youtube.com/embed/eKjMePaNJpQ?autoplay=0&amp;controls=0&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" style="position: absolute; top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px - 35px); /* Ajusta altura para deixar espaço para a barra na parte inferior */ z-index: 5;" title="ZaapFlow"></iframe>
-
-            <!-- Container da Barra de Progresso Personalizada -->
-            <!-- Posicionado ABSOLUTAMENTE na parte inferior do container do vídeo -->
-            <!-- *** IMPORTANTE: Esta barra de progresso e porcentagem SÓ FUNCIONARÃO DINAMICAMENTE COM JAVASCRIPT *** -->
-            <!-- Você precisará adicionar código JavaScript que use a API do YouTube Player para atualizar o 'width' desta barra (#video-progress-bar-internal) e o texto (#video-progress-text-internal) em tempo real. -->
-            <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; height: 25px; background-color: rgba(51, 51, 51, 0.8); /* Fundo semi-transparente escuro para visibilidade */ border-radius: 12px; overflow: hidden; border: 1px solid #ffea00; z-index: 10;" draggable="true" id="video-progress-container-internal">
-                <!-- Barra de Progresso Amarela (Visual, precisa de JS para ser dinâmica) -->
-                <div style="height: 100%; width: 1.89629%; background-color: rgb(255, 234, 0); transition: width 0.3s; position: absolute; top: 0px; left: 0px;" id="video-progress-bar-internal"></div>
-                <!-- Texto da Porcentagem (Visual, precisa de JS para ser dinâmica) -->
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #000; font-weight: bold; font-size: 1rem; text-shadow: 0 0 4px #fff, 0 0 4px #fff; /* Duas sombras para aumentar o contorno */ z-index: 1;" id="video-progress-text-internal">2% Assistido</div>
+        <!-- Seção VSL (Vídeo de Vendas) -->
+        <section class="mb-12 animate-fade-in delay-200">
+            <div class="max-w-4xl mx-auto bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-yellow-700">
+                <div class="video-container">
+                    <!-- Embed do YouTube VSL -->
+                    <!-- Adicionado rel=0 e modestbranding=1 para um player mais limpo -->
+                    <iframe src="https://www.youtube.com/embed/eKjMePaNJpQ?autoplay=0&controls=1&rel=0&modestbranding=1"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                </div>
             </div>
+        </section>
 
-        </div>
+        <!-- Seção do Botão (Inicialmente Oculta) -->
+        <!-- A visibilidade é controlada via JavaScript e CSS transition -->
+        <section id="buyButtonContainer" class="text-center mt-12 mb-12">
+             <!-- Botão com link placeholder e animação pulsante -->
+             <a href="#" class="inline-block px-12 py-4 text-2xl font-bold text-black bg-yellow-400 rounded-full uppercase transition-all duration-300 hover:bg-yellow-300 glow-button animate-pulse-glow">
+                Comprar Ferramenta Agora!
+            </a>
+             <p class="mt-4 text-gray-400 text-sm">(Clique no botão acima para garantir seu acesso imediato)</p>
+        </section>
 
-        <!-- Botão de Compra -->
-        <button onclick="window.location.href='#checkout';" *="" substitua="" #checkout="" pelo="" link="" real="" do="" seu="" checkout="" style="background-color: rgb(16, 185, 129); color: white; padding: 15px 30px; font-size: 1.3rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: background-color 0.3s; display: block; margin: 30px auto 20px;" onmouseover="this.style.backgroundColor='#0d9263'" onmouseout="this.style.backgroundColor='#10b981'" draggable="true" id="zaapflow-buy-button">
-            Comprar Ferramenta Agora
-        </button>
+        <!-- Seção de Funcionalidades (Exemplo) -->
+        <section class="mb-12 animate-fade-in delay-500">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-400 mb-8 glow">Porquê Escolher Zaapflow?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Item de Funcionalidade 1 -->
+                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                    <div class="text-yellow-400 text-4xl mb-4 text-center">⚡</div>
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Velocidade Incrível</h3>
+                    <p class="text-gray-300">Crie páginas de vendas que carregam super rápido, proporcionando uma experiência fluida.</p>
+                </div>
+                <!-- Item de Funcionalidade 2 -->
+                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                     <div class="text-yellow-400 text-4xl mb-4 text-center">📱</div>
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Design Responsivo</h3>
+                    <p class="text-gray-300">Suas páginas se adaptam perfeitamente a qualquer tela, priorizando o mobile.</p>
+                </div>
+                <!-- Item de Funcionalidade 3 -->
+                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                     <div class="text-yellow-400 text-4xl mb-4 text-center">⭐</div>
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Conversão Otimizada</h3>
+                    <p class="text-gray-300">Elementos estrategicamente posicionados para maximizar suas taxas de conversão.</p>
+                </div>
+                 <!-- Item de Funcionalidade 4 -->
+                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                     <div class="text-yellow-400 text-4xl mb-4 text-center">⚙️</div>
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Fácil de Usar</h3>
+                    <p class="text-gray-300">Interface intuitiva e amigável, mesmo para quem não tem experiência técnica.</p>
+                </div>
+                 <!-- Item de Funcionalidade 5 -->
+                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                     <div class="text-yellow-400 text-4xl mb-4 text-center">💰</div>
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Alto Retorno</h3>
+                    <p class="text-gray-300">Invista na ferramenta certa e veja suas vendas e lucros dispararem.</p>
+                </div>
+                 <!-- Item de Funcionalidade 6 -->
+                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                     <div class="text-yellow-400 text-4xl mb-4 text-center">🔄</div>
+                    <h3 class="text-xl font-semibold text-yellow-400 mb-2">Atualizações Constantes</h3>
+                    <p class="text-gray-300">Conte com melhorias e novas funcionalidades para estar sempre à frente.</p>
+                </div>
+            </div>
+        </section>
 
-        <!-- Você pode adicionar mais seções e informações sobre o produto aqui -->
-        <!-- Exemplo: -->
-        <div style="margin-top: 40px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;" draggable="true" id="zaapflow-section-benefits">
-            <h3 style="color: #eeeeee; margin-bottom: 15px;">Por que usar o ZaapFlow?</h3>
-            <p style="color: #cccccc; line-height: 1.6;">
-                - Crie páginas de vendas que convertem como conversas de WhatsApp.<br>
-                - Interface simples e intuitiva.<br>
-                - Aumente drasticamente suas taxas de conversão.<br>
-                - E muito mais!
-            </p>
-        </div>
-        <div style="margin-top: 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;" draggable="true" id="zaapflow-section-features">
-            <h3 style="color: #eeeeee; margin-bottom: 15px;">Funcionalidades Principais:</h3>
-            <ul style="color: #cccccc; line-height: 1.6; padding-left: 20px;">
-                <li>Criador de páginas drag-and-drop.</li>
-                <li>Modelos otimizados para conversão.</li>
-                <li>Integração fácil com seu checkout.</li>
-                <li>Design responsivo para mobile.</li></ul></div></div>
-    <!-- FIM DO CÓDIGO QUE EU GEREI -->
+         <!-- Seção de Depoimentos (Exemplo) -->
+        <section class="mb-12 animate-fade-in delay-700">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-yellow-400 mb-8 glow">O Que Dizem Nossos Clientes?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Depoimento 1 -->
+                <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                    <p class="text-gray-300 italic mb-4">"O Zaapflow mudou o jogo para mim! Minhas vendas aumentaram drasticamente depois que comecei a usar as páginas estilo WhatsApp. É muito rápido e fácil de configurar."</p>
+                    <p class="font-semibold text-yellow-400">- Ana Paula, Empreendedora Digital</p>
+                </div>
+                 <!-- Depoimento 2 -->
+                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700">
+                    <p class="text-gray-300 italic mb-4">"Simplesmente incrível! Eu não sou expert em tecnologia, mas consegui criar uma página de vendas profissional em minutos. A estética é perfeita para mobile. Recomendo demais!"</p>
+                    <p class="font-semibold text-yellow-400">- João Silva, Afiliado</p>
+                </div>
+                 <!-- Depoimento 3 (Adicional para preencher) -->
+                 <div class="bg-gray-900 p-6 rounded-lg shadow-lg border border-yellow-700 md:col-span-2">
+                    <p class="text-gray-300 italic mb-4">"A velocidade de carregamento das páginas Zaapflow é impressionante. Isso faz toda a diferença na experiência do usuário e, claro, nas conversões. Ferramenta essencial para quem vende online!"</p>
+                    <p class="font-semibold text-yellow-400">- Carla Mendes, Lançadora Digital</p>
+                </div>
+            </div>
+        </section>
 
+        <!-- Chamada para Ação Final -->
+         <section class="text-center mt-12 mb-12 animate-fade-in delay-900">
+             <h2 class="text-3xl md:text-4xl font-bold text-yellow-400 mb-6 glow">Não Perca Mais Tempo!</h2>
+            <p class="text-xl md:text-2xl text-gray-300 mb-8">Transforme suas vendas com a velocidade e o design de alta conversão do Zaapflow hoje mesmo.</p>
+            <!-- Você pode repetir o botão aqui, se quiser um botão sempre visível -->
+            <!-- <a href="#" class="inline-block px-12 py-4 text-2xl font-bold text-black bg-yellow-400 rounded-full uppercase transition-all duration-300 hover:bg-yellow-300 glow-button animate-pulse-glow">
+                Comprar Ferramenta Agora!
+            </a> -->
+         </section>
 
-    <!-- AQUI VOCÊ ADICIONARIA O SCRIPT PARA A BARRA DE PROGRESSO SE NECESSÁRIO -->
-    <!-- Exemplo (você precisaria escrever o script real que interage com a API do YouTube) -->
-    <script type="text/javascript" id="www-widgetapi-script" src="https://www.youtube.com/s/player/6e20d3a8/www-widgetapi.vflset/www-widgetapi.js" async="" draggable="true"></script><script src="https://www.youtube.com/iframe_api" draggable="true"></script>
-    <script draggable="true">
-        var player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('youtube-player', {
-                events: {
-                    'onStateChange': onPlayerStateChange,
-                    'onReady': onPlayerReady
-                }
-            });
-        }
+    </div> <!-- Fim do Wrapper principal -->
 
-        function onPlayerReady(event) {
-            // O player está pronto
-            console.log('YouTube Player is ready');
-            // Pode iniciar o loop de atualização da barra aqui
-            updateProgressBar();
-        }
+    <!-- Rodapé -->
+    <footer class="bg-gray-900 text-gray-500 text-center py-6 mt-12">
+        <p>&copy; 2023 Zaapflow. Todos os direitos reservados.</p>
+         <p class="mt-2 text-sm">
+             <a href="#" class="text-yellow-400 hover:underline mx-2">Termos de Uso</a> |
+             <a href="#" class="text-yellow-400 hover:underline mx-2">Política de Privacidade</a>
+         </p>
+    </footer>
 
-        function onPlayerStateChange(event) {
-            // Lidar com mudanças de estado (tocar, pausar, etc.)
-            console.log('Player state changed:', event.data);
-             if (event.data == YT.PlayerState.PLAYING) {
-                updateProgressBar(); // Iniciar/continuar a atualização da barra
-            } else {
-                // Parar a atualização da barra quando o vídeo não está tocando
-            }
-        }
+    <script>
+        // JavaScript para mostrar o botão após 60 segundos
+        const buyButtonContainer = document.getElementById('buyButtonContainer');
+        const delay = 60000; // 60 segundos em milissegundos
 
-        function updateProgressBar() {
-            if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
-                var currentTime = player.getCurrentTime();
-                var duration = player.getDuration();
-                var percentage = (currentTime / duration) * 100;
+        // Usa setTimeout para adicionar a classe 'visible' após o delay
+        setTimeout(() => {
+            buyButtonContainer.classList.add('visible');
+        }, delay);
 
-                document.getElementById('video-progress-bar-internal').style.width = percentage + '%';
-                document.getElementById('video-progress-text-internal').innerText = percentage.toFixed(0) + '% Assistido';
+         // Adicionar Intersection Observer para animação de fade-in (opcional, se quiser animação ao rolar)
+         // O código atual já tem animações no carregamento usando CSS e 'animate-fade-in'
+         // Se quiser animação ao rolar, remova as classes 'animate-fade-in' do HTML
+         // e use um Observer como este:
+         /*
+         document.addEventListener("DOMContentLoaded", function() {
+             const elementsToAnimate = document.querySelectorAll('.section-to-animate'); // Adicione uma classe específica para Observer
 
-                // Chamar esta função novamente em breve para atualizar
-                requestAnimationFrame(updateProgressBar);
-            }
-        }
+             const observer = new IntersectionObserver((entries, observer) => {
+                 entries.forEach(entry => {
+                     if (entry.isIntersecting) {
+                         entry.target.classList.add('animate-fade-in-visible'); // Classe que aplica a animação
+                         observer.unobserve(entry.target); // Para animar apenas uma vez
+                     }
+                 });
+             }, {
+                 threshold: 0.1 // Porcentagem do elemento visível para disparar
+             });
 
-        // Iniciar a atualização da barra (será chamada de novo se o player estiver pronto e tocando)
-        // updateProgressBar(); // Pode ser chamado aqui ou dentro de onPlayerReady/onPlayerStateChange
+             elementsToAnimate.forEach(element => {
+                 observer.observe(element);
+             });
+         });
+         // E no CSS:
+         // .section-to-animate { opacity: 0; transform: translateY(20px); transition: opacity 1s ease-out, transform 1s ease-out; }
+         // .section-to-animate.animate-fade-in-visible { opacity: 1; transform: translateY(0); }
+         */
+
+         // Para este request, as animações no carregamento via CSS já atendem.
+         // Nenhuma alteração adicional de JS é necessária além do timer do botão.
+
     </script>
-    <!-- FIM DO SCRIPT DE EXEMPLO -->
-
-</div>
-
-<style draggable="true">
-        /* Estilos globais ou específicos que não estão inline podem vir aqui */
-        body { margin: 0; } /* Garante que o fundo preto cubra tudo */
-    </style></body></html>
+</body>
+</html>
