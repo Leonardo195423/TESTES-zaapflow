@@ -1,811 +1,441 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Assistente de IA</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Gerador de Páginas de Vendas com IA (Entrada Única)</title>
     <style>
-        /* Estilos personalizados para a aplicação */
+        /* Estilos globais para o corpo da ferramenta */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+        /* Contêiner principal da ferramenta */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
+        /* Estilos para títulos */
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        h2 {
+            font-size: 1.8em;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 40px;
         }
-        /* Animação de carregamento (pontos a saltar) */
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1.0); }
+        /* Estilos para seções de formulário */
+        .form-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
         }
-        .animate-bounce-dot {
-            animation: bounce 1.4s infinite ease-in-out both;
+        .form-section input[type="text"],
+        .form-section textarea {
+            width: calc(100% - 20px); /* Ajusta a largura considerando o padding */
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease; /* Transição suave na borda */
         }
-        /* Ocultar elementos por defeito */
-        .hidden {
-            display: none;
+        .form-section input[type="text"]:focus,
+        .form-section textarea:focus {
+            border-color: #007bff; /* Cor da borda ao focar */
+            outline: none; /* Remove o contorno padrão */
+        }
+        .form-section textarea {
+            min-height: 200px; /* Altura mínima para textarea principal */
+            resize: vertical; /* Permite redimensionar verticalmente */
+        }
+        /* Estilos para botões */
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Transições para hover */
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px); /* Efeito de "levantar" no hover */
+        }
+        /* Estilos para a mensagem de carregamento */
+        #loading {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.1em;
+            color: #666;
+            display: none; /* Escondido por padrão */
+        }
+        /* Estilos para a pré-visualização da página */
+        .page-preview {
+            border: 1px dashed #a0a0a0;
+            padding: 25px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+            min-height: 300px;
+            position: relative;
+        }
+        .page-preview iframe {
+            width: 100%;
+            height: 500px; /* Altura do iframe, ajuste conforme necessário */
+            border: none;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+        /* Contêiner para o botão de copiar */
+        .copy-button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .copy-button {
+            background-color: #28a745; /* Cor verde para o botão de copiar */
+            padding: 12px 25px;
+            width: auto; /* Largura automática para o botão de copiar */
+            display: inline-block; /* Permite centralizar com text-align */
+        }
+        .copy-button:hover {
+            background-color: #218838;
+        }
+        /* Estilos para o rodapé da ferramenta */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #777;
+            font-size: 0.9em;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
+    <div class="container">
+        <h1>Gerador de Páginas de Vendas com IA</h1>
+        <p style="text-align: center; margin-bottom: 40px; color: #666;">Descreva seu produto/serviço abaixo, e nossa IA criará uma página de vendas completa para você!</p>
 
-    <div id="app-container" class="flex flex-col h-screen bg-gray-100 font-sans antialiased text-gray-800">
-        <!-- Cabeçalho -->
-        <header class="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-4 shadow-lg rounded-b-xl flex justify-between items-center relative">
-            <button id="hamburger-button" class="p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white hidden" aria-label="Abrir menu de projetos">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-            <h1 class="text-3xl font-bold text-center flex-1">Meu Assistente de IA</h1>
-            <div class="flex space-x-2">
-                <button id="chat-mode-button" class="px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-white text-blue-700 shadow-md">
-                    Chat
-                </button>
-                <button id="dev-mode-button" class="px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-purple-500 text-white hover:bg-purple-600">
-                    Programador
-                </button>
-            </div>
-            <p id="user-id-display" class="absolute bottom-1 right-4 text-xs opacity-70"></p>
-        </header>
+        <div class="form-section">
+            <label for="productDescription">Descreva seu produto/serviço (inclua nome, público, problema que resolve, benefícios, detalhes da oferta e chamada para ação):</label>
+            <textarea id="productDescription" placeholder="Ex: Meu produto é um 'Curso Completo de Edição de Vídeos para Iniciantes'. Ele é para jovens criadores de conteúdo que querem aprender a editar vídeos profissionais sem complicação. Resolve a dificuldade de criar vídeos de alta qualidade e engajadores. Os benefícios incluem: aprender do zero, técnicas avançadas, acesso a templates exclusivos. A oferta é: De R$500 por R$199, com bônus de 3 meses de suporte. A chamada para ação é 'Comece a Editar Agora!'." required></textarea>
 
-        <!-- Sidebar para o Modo Programador -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-        <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-lg transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-                <h2 class="text-xl font-bold">Meus Projetos</h2>
-                <button id="close-sidebar-button" class="p-1 rounded-full hover:bg-gray-700 transition duration-200" aria-label="Fechar menu">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div id="projects-list" class="p-4 overflow-y-auto custom-scrollbar">
-                <p class="text-gray-400 text-sm">Nenhum projeto guardado ainda.</p>
-            </div>
+            <button onclick="generatePage()">Gerar Página de Vendas com IA</button>
         </div>
 
-        <!-- Conteúdo Principal -->
-        <main id="main-content" class="flex-1 overflow-y-auto p-4"></main>
+        <div id="loading">
+            <p>Conectando com a inteligência artificial e gerando sua página de vendas...</p>
+            <p>Aguarde um momento.</p>
+        </div>
 
-        <!-- Rodapé com a área de input -->
-        <footer class="p-4 bg-white border-t border-gray-200 shadow-lg rounded-t-xl">
-            <div id="image-preview-container" class="hidden items-center mb-3 p-2 bg-gray-100 rounded-lg shadow-inner">
-                <img id="image-preview-img" src="" alt="Pré-visualização da imagem selecionada" class="w-16 h-16 object-cover rounded-md mr-3"/>
-                <span id="image-preview-name" class="text-sm text-gray-700 truncate flex-1"></span>
-                <button id="clear-image-button" class="ml-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-label="Remover imagem">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <div class="page-preview" style="display: none;">
+            <h2>Pré-visualização da Página de Vendas</h2>
+            <iframe id="pagePreviewFrame" srcdoc=""></iframe>
+            <div class="copy-button-container">
+                <button class="copy-button" onclick="copyPageHtml()">Copiar HTML da Página</button>
             </div>
-            <div class="flex items-end space-x-3">
-                <input type="file" accept="image/*" id="file-input" class="hidden" />
-                <button id="attach-image-button" class="p-3 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105" aria-label="Anexar imagem">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                </button>
-                <textarea id="prompt-input" class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-20 custom-scrollbar" placeholder="Digite sua mensagem aqui..."></textarea>
-                <button id="generate-image-dev-button" class="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105 hidden" title="Gerar Imagem">
-                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                </button>
-                <button id="send-button" class="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105" title="Enviar Mensagem">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                </button>
-            </div>
-        </footer>
+        </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Importações do Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, orderBy, addDoc, onSnapshot, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <footer>
+        <p>&copy; 2025 Gerador de Páginas de Vendas com IA. Todos os direitos reservados.</p>
+    </footer>
 
-        // --- VARIÁVEIS DE ESTADO GLOBAIS ---
-        let appMode = 'chat'; // 'chat' ou 'developer'
-        let chatHistory = [];
-        let projects = [];
-        let codeHistory = [];
-        let historyPointer = -1;
-        let isLoading = false;
-        let selectedImage = null;
-        let selectedImageBase64 = null;
-        let generationProgress = 0;
-        let progressInterval = null;
+    <script>
+        // Função principal para gerar a página de vendas usando IA
+        async function generatePage() {
+            // Coleta a descrição do produto/serviço do campo de texto
+            const productDescription = document.getElementById('productDescription').value;
 
-        // Instâncias do Firebase
-        let db, auth, userId, appId;
-        let unsubscribeChat = null; // Para anular a inscrição do listener do chat
-
-        // --- ELEMENTOS DO DOM ---
-        const mainContent = document.getElementById('main-content');
-        const promptInput = document.getElementById('prompt-input');
-        const sendButton = document.getElementById('send-button');
-        const chatModeButton = document.getElementById('chat-mode-button');
-        const devModeButton = document.getElementById('dev-mode-button');
-        const hamburgerButton = document.getElementById('hamburger-button');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const closeSidebarButton = document.getElementById('close-sidebar-button');
-        const projectsList = document.getElementById('projects-list');
-        const userIdDisplay = document.getElementById('user-id-display');
-        const fileInput = document.getElementById('file-input');
-        const attachImageButton = document.getElementById('attach-image-button');
-        const imagePreviewContainer = document.getElementById('image-preview-container');
-        const imagePreviewImg = document.getElementById('image-preview-img');
-        const imagePreviewName = document.getElementById('image-preview-name');
-        const clearImageButton = document.getElementById('clear-image-button');
-        const generateImageDevButton = document.getElementById('generate-image-dev-button');
-        
-        // --- TEMPLATES HTML ---
-        const chatViewTemplate = `
-            <div id="chat-history-container" class="space-y-4 h-full custom-scrollbar">
-                <div class="flex justify-center items-center h-full">
-                    <p class="text-gray-500 text-lg">Comece a conversar com a IA!</p>
-                </div>
-            </div>
-            <div id="messages-end-ref"></div>
-        `;
-
-        const developerViewTemplate = `
-            <div class="flex-1 flex flex-col lg:flex-row h-full space-y-4 lg:space-y-0 lg:space-x-4">
-                <!-- Editor de Código e Controles -->
-                <div class="flex-1 flex flex-col bg-white rounded-lg shadow-md p-4">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-800">Editor de Código</h2>
-                    <div class="flex space-x-3 mb-4 items-stretch">
-                        <select id="code-type-select" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="html">HTML</option>
-                            <option value="react">React</option>
-                            <option value="javascript">JavaScript</option>
-                        </select>
-                        <input type="text" id="project-name-input" placeholder="Nome do Projeto" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                        <button id="save-project-button" class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out flex items-center justify-center min-w-[120px]">Guardar</button>
-                        <button id="undo-button" class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]" title="Desfazer">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 12h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2z" /></svg> Desfazer
-                        </button>
-                        <button id="copy-code-button" class="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out relative flex items-center justify-center min-w-[120px]">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V15m-2.586 2.586a1 1 0 00.707.293h3.414a1 1 0 00.707-.293l3.414-3.414a1 1 0 00.293-.707V9.414a1 1 0 00-.293-.707L15.414 4.293A1 1 0 0014.707 4H12a2 2 0 00-2 2v2" /></svg> Copiar Código
-                            <span id="copy-message" class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap hidden"></span>
-                        </button>
-                    </div>
-                    <textarea id="code-content-textarea" class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none custom-scrollbar font-mono text-sm" placeholder="Escreva o seu código aqui..."></textarea>
-                </div>
-                <!-- Área de Pré-visualização ao Vivo -->
-                <div class="flex-1 flex flex-col bg-white rounded-lg shadow-md p-4">
-                    <h2 class="text-2xl font-bold mb-4 text-gray-800">Pré-visualização ao Vivo</h2>
-                    <iframe id="preview-iframe" class="flex-1 w-full border border-gray-300 rounded-lg bg-white" title="Pré-visualização de Código"></iframe>
-                    <div id="dev-image-generated-container" class="mt-4 p-4 bg-gray-50 rounded-lg shadow-inner hidden">
-                        <h3 class="text-lg font-semibold mb-2 text-gray-700">Imagem Gerada</h3>
-                        <div id="dev-image-loading" class="flex justify-center items-center h-32">
-                            <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-                            <p class="ml-3 text-gray-600">Gerando imagem...</p>
-                        </div>
-                        <img id="dev-image-generated" src="" alt="Imagem Gerada pela IA" class="max-w-full h-auto rounded-md shadow-sm hidden" />
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // --- FUNÇÕES DE RENDERIZAÇÃO E MANIPULAÇÃO DO DOM ---
-
-        /**
-         * Renderiza o histórico do chat no DOM.
-         */
-        function renderChatHistory() {
-            const container = document.getElementById('chat-history-container');
-            if (!container) return;
-
-            if (chatHistory.length === 0 && !isLoading) {
-                container.innerHTML = `
-                    <div class="flex justify-center items-center h-full">
-                        <p class="text-gray-500 text-lg">Comece a conversar com a IA!</p>
-                    </div>`;
+            // Validação simples para garantir que o campo não está vazio
+            if (!productDescription.trim()) {
+                displayMessage('Por favor, descreva seu produto/serviço para que a IA possa gerar a página.', 'error');
                 return;
             }
-            
-            let html = '';
-            chatHistory.forEach(message => {
-                const isUser = message.role === 'user';
-                html += `
-                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'}">
-                        <div class="max-w-xl p-3 rounded-lg shadow-md ${isUser ? 'bg-blue-500 text-white rounded-br-none' : 'bg-white text-gray-800 rounded-bl-none'}">
-                            ${message.text ? `<p class="whitespace-pre-wrap">${message.text}</p>` : ''}
-                            ${message.image ? `<img src="${message.image}" alt="Imagem" class="mt-2 rounded-md max-w-full h-auto" style="max-height: 200px;" />` : ''}
-                        </div>
-                    </div>
-                `;
-            });
 
-            if (isLoading) {
-                html += `
-                    <div class="flex justify-start">
-                        <div class="max-w-xl p-3 rounded-lg shadow-md bg-white text-gray-800 rounded-bl-none">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce-dot" style="animation-delay: 0s;"></div>
-                                <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce-dot" style="animation-delay: 0.1s;"></div>
-                                <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce-dot" style="animation-delay: 0.2s;"></div>
+            // Exibe a mensagem de carregamento e esconde a pré-visualização
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.page-preview').style.display = 'none';
+
+            // Constrói o prompt detalhado para a IA
+            const prompt = `Com base na seguinte descrição de produto/serviço, crie o conteúdo para uma página de vendas.
+            A descrição é: "${productDescription}".
+
+            Por favor, forneça a resposta em formato JSON com as seguintes chaves:
+            - "product_name": O nome do produto/serviço.
+            - "introduction": Um parágrafo introdutório persuasivo que aborda o problema do público-alvo e apresenta o produto como solução.
+            - "benefits_list": Uma lista de strings com os principais benefícios do produto/serviço.
+            - "offer_details_text": Um parágrafo detalhando a oferta, incluindo preço e bônus.
+            - "call_to_action_text": O texto exato da chamada para ação.
+            - "target_audience_summary": Um breve resumo do público-alvo.
+            - "problem_solved_summary": Um breve resumo do problema que o produto resolve.`;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "product_name": { "type": "STRING" },
+                            "introduction": { "type": "STRING" },
+                            "benefits_list": {
+                                "type": "ARRAY",
+                                "items": { "type": "STRING" }
+                            },
+                            "offer_details_text": { "type": "STRING" },
+                            "call_to_action_text": { "type": "STRING" },
+                            "target_audience_summary": { "type": "STRING" },
+                            "problem_solved_summary": { "type": "STRING" }
+                        },
+                        "propertyOrdering": ["product_name", "introduction", "benefits_list", "offer_details_text", "call_to_action_text", "target_audience_summary", "problem_solved_summary"]
+                    }
+                }
+            };
+
+            const apiKey = ""; // A API key será fornecida pelo ambiente Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Erro da API: ${response.status} - ${errorData.error.message || 'Erro desconhecido'}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+
+                    const jsonResponse = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                    // Extrai os dados da resposta da IA, com fallbacks para vazio se não vierem
+                    const aiProductName = jsonResponse.product_name || "Seu Produto/Serviço";
+                    const aiIntroduction = jsonResponse.introduction || "Desculpe, a IA não gerou uma introdução. Por favor, tente novamente com uma descrição mais detalhada.";
+                    const aiBenefitsList = jsonResponse.benefits_list || ["Benefício 1", "Benefício 2", "Benefício 3"];
+                    const aiOfferDetails = jsonResponse.offer_details_text || "Detalhes da oferta não gerados.";
+                    const aiCallToAction = jsonResponse.call_to_action_text || "Saiba Mais!";
+                    const aiTargetAudience = jsonResponse.target_audience_summary || "público-alvo";
+                    const aiProblemSolved = jsonResponse.problem_solved_summary || "problema";
+
+
+                    const benefitsListHtml = aiBenefitsList.map(benefit => `<li>${benefit}</li>`).join('');
+
+                    // Conteúdo HTML da página de vendas a ser gerada
+                    const generatedHtml = `
+                        <!DOCTYPE html>
+                        <html lang="pt-BR">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>${aiProductName} - Sua Solução Definitiva</title>
+                            <style>
+                                /* Estilos para a página de vendas gerada */
+                                body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+                                .sales-page-container { max-width: 800px; margin: 30px auto; background: #fff; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; }
+                                h1 { color: #007bff; text-align: center; margin-bottom: 25px; font-size: 2.8em; }
+                                h2 { color: #2c3e50; margin-top: 35px; margin-bottom: 20px; font-size: 1.8em; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+                                p { margin-bottom: 15px; font-size: 1.1em; }
+                                ul { list-style: none; padding: 0; margin-bottom: 20px; }
+                                ul li { background: #e9f7ef; margin-bottom: 10px; padding: 12px; border-radius: 5px; display: flex; align-items: center; }
+                                ul li::before { content: '✔️'; margin-right: 10px; color: #28a745; font-weight: bold; font-size: 1.2em; }
+                                .cta-button {
+                                    display: block;
+                                    width: 70%;
+                                    margin: 40px auto;
+                                    padding: 20px 30px;
+                                    background-color: #28a745;
+                                    color: white;
+                                    text-align: center;
+                                    text-decoration: none;
+                                    border-radius: 10px;
+                                    font-size: 1.5em;
+                                    font-weight: bold;
+                                    transition: background-color 0.3s ease, transform 0.2s ease;
+                                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+                                }
+                                .cta-button:hover {
+                                    background-color: #218838;
+                                    transform: translateY(-3px);
+                                }
+                                .offer-details {
+                                    background-color: #fff3cd;
+                                    border-left: 5px solid #ffc107;
+                                    padding: 20px;
+                                    margin-top: 30px;
+                                    border-radius: 5px;
+                                    font-size: 1.1em;
+                                    color: #664d03;
+                                }
+                                .highlight { font-weight: bold; color: #0056b3; }
+                                .footer-sales-page {
+                                    text-align: center;
+                                    margin-top: 50px;
+                                    padding-top: 20px;
+                                    border-top: 1px solid #eee;
+                                    color: #777;
+                                    font-size: 0.9em;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="sales-page-container">
+                                <h1>${aiProductName}: A Solução Definitiva para o seu Sucesso!</h1>
+
+                                <p>${aiIntroduction}</p>
+
+                                <h2>Descubra os Benefícios Incríveis!</h2>
+                                <p>Com o <span class="highlight">${aiProductName}</span>, você finalmente poderá:</p>
+                                <ul>
+                                    ${benefitsListHtml}
+                                </ul>
+
+                                <p>Não perca mais tempo com soluções que não entregam resultados. O
+                                <span class="highlight">${aiProductName}</span> foi desenvolvido pensando
+                                nas suas necessidades, para transformar seus desafios em conquistas.</p>
+
+                                <h2>Oferta Especial por Tempo Limitado!</h2>
+                                <div class="offer-details">
+                                    <p>${aiOfferDetails}</p>
+                                </div>
+
+                                <a href="#" class="cta-button">${aiCallToAction}</a>
+
+                                <p style="text-align: center; margin-top: 30px; font-size: 0.95em; color: #555;">
+                                    Clique no botão acima e comece sua jornada para o sucesso hoje mesmo!
+                                </p>
+
+                                <div class="footer-sales-page">
+                                    <p>Dúvidas? Entre em contato conosco. Seu sucesso é a nossa prioridade.</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                `;
+                        </body>
+                        </html>
+                    `;
+
+                    // Define o HTML gerado no iframe para pré-visualização
+                    document.getElementById('pagePreviewFrame').srcdoc = generatedHtml;
+
+                    // Esconde a mensagem de carregamento e exibe a pré-visualização
+                    document.getElementById('loading').style.display = 'none';
+                    document.querySelector('.page-preview').style.display = 'block';
+
+                } else {
+                    displayMessage('A IA não conseguiu gerar o conteúdo. Tente novamente com uma descrição mais detalhada.', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error('Erro ao chamar a API da IA:', error);
+                displayMessage(`Erro ao gerar a página: ${error.message}. Verifique o console para mais detalhes.`, 'error');
+                document.getElementById('loading').style.display = 'none';
             }
-            container.innerHTML = html;
-            document.getElementById('messages-end-ref')?.scrollIntoView({ behavior: 'smooth' });
         }
 
-        /**
-         * Renderiza a lista de projetos na sidebar.
-         */
-        function renderProjectsList() {
-            if (projects.length === 0) {
-                projectsList.innerHTML = `<p class="text-gray-400 text-sm">Nenhum projeto guardado ainda.</p>`;
-                return;
-            }
-            
-            const ul = document.createElement('ul');
-            projects.forEach(project => {
-                const li = document.createElement('li');
-                li.className = "py-2 border-b border-gray-700 last:border-b-0";
-                li.innerHTML = `
-                    <button data-project-id="${project.id}" class="w-full text-left text-white hover:text-blue-400 transition duration-200 truncate">
-                        <span class="font-medium">${project.name}</span>
-                        <span class="text-xs text-gray-400"> (${project.type})</span>
-                    </button>
-                `;
-                ul.appendChild(li);
-            });
-            projectsList.innerHTML = '';
-            projectsList.appendChild(ul);
-        }
+        // Função para copiar o HTML da página gerada para a área de transferência
+        function copyPageHtml() {
+            const iframe = document.getElementById('pagePreviewFrame');
+            const htmlToCopy = iframe.srcdoc; // Pega o conteúdo HTML do iframe
 
-        /**
-         * Atualiza a interface do utilizador com base no modo da aplicação ('chat' ou 'developer').
-         */
-        function updateUIForMode() {
-            if (appMode === 'chat') {
-                // Configuração do modo Chat
-                mainContent.innerHTML = chatViewTemplate;
-                chatModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-white text-blue-700 shadow-md';
-                devModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-purple-500 text-white hover:bg-purple-600';
-                hamburgerButton.classList.add('hidden');
-                promptInput.placeholder = "Digite sua mensagem aqui...";
-                sendButton.title = "Enviar Mensagem";
-                generateImageDevButton.classList.add('hidden');
-                renderChatHistory();
-                subscribeToChatHistory();
-            } else {
-                // Configuração do modo Programador
-                if (unsubscribeChat) unsubscribeChat(); // Anular subscrição do chat
-                mainContent.innerHTML = developerViewTemplate;
-                devModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-white text-purple-700 shadow-md';
-                chatModeButton.className = 'px-4 py-2 rounded-full text-sm font-semibold transition duration-200 ease-in-out bg-blue-500 text-white hover:bg-blue-600';
-                hamburgerButton.classList.remove('hidden');
-                promptInput.placeholder = "Descreva o código que deseja gerar, depurar ou refinar...";
-                sendButton.title = "Pedir Ajuda à IA";
-                generateImageDevButton.classList.remove('hidden');
-                addDeveloperEventListeners();
-                loadProjects();
-            }
-            updateButtonStates();
-        }
-
-        /**
-         * Atualiza o estado (ativado/desativado) dos botões.
-         */
-        function updateButtonStates() {
-            const promptIsEmpty = !promptInput.value.trim();
-            const imageIsSelected = !!selectedImage;
-
-            sendButton.disabled = isLoading || (appMode === 'chat' && promptIsEmpty && !imageIsSelected) || (appMode === 'developer' && promptIsEmpty && !imageIsSelected);
-            generateImageDevButton.disabled = isLoading || promptIsEmpty;
-            attachImageButton.disabled = isLoading;
-            promptInput.disabled = isLoading;
-        }
-
-        // --- FUNÇÕES DE LÓGICA DA APLICAÇÃO ---
-
-        /**
-         * Muda o modo da aplicação.
-         * @param {string} newMode - O novo modo ('chat' ou 'developer').
-         */
-        function setAppMode(newMode) {
-            if (appMode === newMode) return;
-            appMode = newMode;
-            updateUIForMode();
-        }
-
-        /**
-         * Limpa a imagem selecionada.
-         */
-        function clearSelectedImage() {
-            selectedImage = null;
-            selectedImageBase64 = null;
-            fileInput.value = '';
-            imagePreviewContainer.classList.add('hidden');
-            updateButtonStates();
-        }
-
-        /**
-         * Executa o código na iframe de pré-visualização.
-         */
-        function runCode() {
-            const iframe = document.getElementById('preview-iframe');
-            if (!iframe) return;
-
-            const codeContent = document.getElementById('code-content-textarea').value;
-            const codeType = document.getElementById('code-type-select').value;
-            const doc = iframe.contentWindow.document;
-            doc.open();
-            if (codeType === 'html') {
-                doc.write(codeContent);
-            } else if (codeType === 'javascript') {
-                doc.write(`<html><body><script>${codeContent}<\/script></body></html>`);
-            } else if (codeType === 'react') {
-                const reactHtml = `
-                    <!DOCTYPE html>
-                    <html><head>
-                        <title>Pré-visualização React</title>
-                        <script src="https://unpkg.com/react/umd/react.development.js"><\/script>
-                        <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"><\/script>
-                        <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
-                        <script src="https://cdn.tailwindcss.com"><\/script>
-                        <style>body { margin: 0; font-family: 'Inter', sans-serif; } #root { height: 100vh; width: 100vw; }</style>
-                    </head><body>
-                        <div id="root"></div>
-                        <script type="text/babel">
-                            ${codeContent}
-                            // Assegura que o componente App é renderizado
-                            if (typeof App !== 'undefined') {
-                                ReactDOM.render(<App />, document.getElementById('root'));
-                            }
-                        <\/script>
-                    </body></html>`;
-                doc.write(reactHtml);
-            }
-            doc.close();
-        }
-        
-        /**
-         * Copia o código do editor para a área de transferência.
-         */
-        function copyCodeToClipboard() {
-            const codeContentEl = document.getElementById('code-content-textarea');
-            const copyMessageEl = document.getElementById('copy-message');
-            if (!codeContentEl || !copyMessageEl) return;
-
-            // Cria um textarea temporário
-            const textarea = document.createElement('textarea');
-            textarea.value = codeContentEl.value;
-            textarea.style.position = 'absolute';
-            textarea.style.left = '-9999px'; // Move-o para fora do ecrã
-            document.body.appendChild(textarea);
-            
+            // Usa document.execCommand('copy') para compatibilidade com iframes
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = htmlToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
             try {
-                textarea.select();
-                document.execCommand('copy'); // Comando de cópia
-                copyMessageEl.textContent = 'Código copiado!';
-                copyMessageEl.classList.remove('hidden');
-                setTimeout(() => copyMessageEl.classList.add('hidden'), 2000);
+                document.execCommand('copy');
+                displayMessage('HTML da página copiado para a área de transferência!', 'success');
             } catch (err) {
-                console.error('Falha ao copiar o código: ', err);
-                copyMessageEl.textContent = 'Falha ao copiar!';
-                copyMessageEl.classList.remove('hidden');
-                setTimeout(() => copyMessageEl.classList.add('hidden'), 2000);
+                displayMessage('Erro ao copiar o HTML. Por favor, copie manualmente.', 'error');
+                console.error('Erro ao copiar: ', err);
             } finally {
-                // Remove o textarea temporário
-                document.body.removeChild(textarea);
+                document.body.removeChild(tempTextArea);
             }
         }
 
-        /**
-         * Guarda o projeto atual no Firestore.
-         */
-        async function saveProject() {
-            const projectName = document.getElementById('project-name-input').value.trim();
-            const codeContent = document.getElementById('code-content-textarea').value.trim();
-            const codeType = document.getElementById('code-type-select').value;
-
-            if (!projectName || !codeContent || !db || !userId) {
-                console.error("Nome do projeto, conteúdo do código ou dados do utilizador/DB em falta.");
-                alert("Por favor, preencha o nome do projeto e o código antes de guardar.");
-                return;
+        // Função para exibir mensagens na interface (substitui alert())
+        function displayMessage(message, type) {
+            let messageBox = document.getElementById('messageBox');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'messageBox';
+                messageBox.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    font-size: 1.1em;
+                    z-index: 1000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    display: none;
+                    opacity: 0;
+                    transition: opacity 0.5s ease-in-out;
+                `;
+                document.body.appendChild(messageBox);
             }
-            const projectsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/projects`);
-            try {
-                await addDoc(projectsCollectionRef, {
-                    name: projectName,
-                    code: codeContent,
-                    type: codeType,
-                    timestamp: Date.now()
+
+            messageBox.textContent = message;
+            if (type === 'success') {
+                messageBox.style.backgroundColor = '#d4edda';
+                messageBox.style.color = '#155724';
+                messageBox.style.border = '1px solid #c3e6cb';
+            } else if (type === 'error') {
+                messageBox.style.backgroundColor = '#f8d7da';
+                messageBox.style.color = '#721c24';
+                messageBox.style.border = '1px solid #f5c6cb';
+            } else {
+                messageBox.style.backgroundColor = '#e2e3e5';
+                messageBox.style.color = '#383d41';
+                messageBox.style.border = '1px solid #d6d8db';
+            }
+
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.opacity = '1';
+            }, 10); // Pequeno atraso para a transição funcionar
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.addEventListener('transitionend', function handler() {
+                    messageBox.style.display = 'none';
+                    messageBox.removeEventListener('transitionend', handler);
                 });
-                alert("Projeto guardado com sucesso!");
-                loadProjects();
-            } catch (error) {
-                console.error("Erro ao guardar projeto:", error);
-                alert("Ocorreu um erro ao guardar o projeto.");
-            }
+            }, 3000); // Mensagem desaparece após 3 segundos
         }
-
-        /**
-         * Carrega os projetos do utilizador a partir do Firestore.
-         */
-        async function loadProjects() {
-            if (!db || !userId) return;
-            const projectsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/projects`);
-            const q = query(projectsCollectionRef, orderBy('timestamp', 'desc'));
-
-            try {
-                const snapshot = await getDocs(q);
-                projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderProjectsList();
-            } catch (error) {
-                console.error("Erro ao carregar projetos:", error);
-            }
-        }
-
-        /**
-         * Seleciona um projeto para carregar no editor.
-         */
-        function selectProject(project) {
-            addStateToHistory();
-            document.getElementById('code-content-textarea').value = project.code;
-            document.getElementById('code-type-select').value = project.type;
-            document.getElementById('project-name-input').value = project.name;
-            document.getElementById('dev-image-generated-container').classList.add('hidden');
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-            runCode();
-        }
-
-        /**
-         * Adiciona o estado atual do código ao histórico para a funcionalidade de anular.
-         */
-        function addStateToHistory() {
-            const codeContent = document.getElementById('code-content-textarea').value;
-            const codeType = document.getElementById('code-type-select').value;
-            const projectName = document.getElementById('project-name-input').value;
-
-            const newHistory = codeHistory.slice(0, historyPointer + 1);
-            const MAX_HISTORY_SIZE = 20;
-            if (newHistory.length >= MAX_HISTORY_SIZE) {
-                newHistory.shift();
-            }
-            newHistory.push({ codeContent, codeType, projectName });
-            codeHistory = newHistory;
-            historyPointer = newHistory.length - 1;
-            document.getElementById('undo-button').disabled = historyPointer <= 0;
-        }
-
-        /**
-         * Anula a última alteração de código.
-         */
-        function undoCodeChange() {
-            if (historyPointer > 0) {
-                historyPointer--;
-                const previousState = codeHistory[historyPointer];
-                document.getElementById('code-content-textarea').value = previousState.codeContent;
-                document.getElementById('code-type-select').value = previousState.codeType;
-                document.getElementById('project-name-input').value = previousState.projectName;
-                document.getElementById('dev-image-generated-container').classList.add('hidden');
-                document.getElementById('undo-button').disabled = historyPointer <= 0;
-                runCode();
-            }
-        }
-
-        /**
-         * Envia uma mensagem para a IA (texto, código ou imagem).
-         * @param {string} mode - O tipo de pedido ('text', 'code', 'image', 'generateImageDev').
-         */
-        async function sendMessage(mode) {
-            const currentPrompt = promptInput.value.trim();
-            if (isLoading || !db || !userId) return;
-            if ((appMode === 'chat' && !currentPrompt && !selectedImage) || (appMode === 'developer' && !currentPrompt && mode !== 'generateImageDev')) return;
-
-            isLoading = true;
-            updateButtonStates();
-
-            const chatCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/chatHistory`);
-
-            try {
-                if (appMode === 'developer') {
-                    const codeTextarea = document.getElementById('code-content-textarea');
-                    if (mode === 'generateImageDev') {
-                        const devImgContainer = document.getElementById('dev-image-generated-container');
-                        const devImgLoading = document.getElementById('dev-image-loading');
-                        const devImgGenerated = document.getElementById('dev-image-generated');
-                        
-                        devImgContainer.classList.remove('hidden');
-                        devImgLoading.classList.remove('hidden');
-                        devImgGenerated.classList.add('hidden');
-
-                        const imagePayload = { instances: { prompt: currentPrompt }, parameters: { "sampleCount": 1 } };
-                        const imageApiKey = ""; 
-                        const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${imageApiKey}`;
-                        const imageResponse = await fetch(imageApiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(imagePayload)
-                        });
-                        const imageResult = await imageResponse.json();
-
-                        if (imageResult.predictions && imageResult.predictions[0].bytesBase64Encoded) {
-                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
-                            devImgGenerated.src = imageUrl;
-                            devImgGenerated.classList.remove('hidden');
-                        } else {
-                            console.error("Erro ao gerar imagem no modo programador:", imageResult);
-                            devImgContainer.classList.add('hidden');
-                        }
-                        devImgLoading.classList.add('hidden');
-
-                    } else { // Geração/Refinamento de Código
-                        generationProgress = 0;
-                        if (progressInterval) clearInterval(progressInterval);
-
-                        progressInterval = setInterval(() => {
-                            if (generationProgress < 99) {
-                                generationProgress++;
-                                codeTextarea.value = `Gerando código... ${generationProgress}%`;
-                            } else {
-                                clearInterval(progressInterval);
-                                progressInterval = null;
-                            }
-                        }, 100);
-                        
-                        const codeContent = document.getElementById('code-content-textarea').value;
-                        const codeType = document.getElementById('code-type-select').value;
-                        let designInstruction = "Garanta que o design é robusto, avançado e esteticamente refinado, utilizando as classes do Tailwind CSS para um estilo moderno e responsivo.";
-                        
-                        const developerPromptParts = [
-                            { text: `Dado o seguinte código de tipo '${codeType}':\n\n\`\`\`${codeType}\n${codeContent}\n\`\`\`\n\n` },
-                            { text: `E o pedido do utilizador: '${currentPrompt}'. ` }
-                        ];
-                        if (selectedImageBase64) {
-                            developerPromptParts.push({ text: 'Analise a imagem fornecida para referência.' });
-                            developerPromptParts.push({ inlineData: { mimeType: selectedImage.type, data: selectedImageBase64 } });
-                        }
-                        developerPromptParts.push({ text: `\n\nForneça APENAS o código puro (sem markdown extra). ${designInstruction}` });
-
-                        const payload = { contents: [{ role: "user", parts: developerPromptParts }] };
-                        const apiKey = "";
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        const result = await response.json();
-                        
-                        clearInterval(progressInterval);
-                        progressInterval = null;
-
-                        if (result.candidates && result.candidates[0].content.parts[0].text) {
-                            let aiResponseText = result.candidates[0].content.parts[0].text;
-                            const codeBlockMatch = aiResponseText.match(/```(?:\w+)?\n([\s\S]*?)\n```/);
-                            if (codeBlockMatch && codeBlockMatch[1]) {
-                                codeTextarea.value = codeBlockMatch[1].trim();
-                            } else {
-                                codeTextarea.value = aiResponseText;
-                            }
-                            runCode();
-                            addStateToHistory();
-                        } else {
-                            codeTextarea.value = "Erro ao gerar código. Por favor, tente novamente.";
-                        }
-                    }
-                } else { // appMode === 'chat'
-                    renderChatHistory(); 
-                    
-                    if (mode === 'image') {
-                        await addDoc(chatCollectionRef, { role: 'user', text: `Gerar imagem: "${currentPrompt}"`, timestamp: Date.now() });
-                        
-                        const imagePayload = { instances: { prompt: currentPrompt }, parameters: { "sampleCount": 1 } };
-                        const imageApiKey = "";
-                        const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${imageApiKey}`;
-                        const imageResponse = await fetch(imageApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(imagePayload) });
-                        const imageResult = await imageResponse.json();
-
-                        if (imageResult.predictions && imageResult.predictions[0].bytesBase64Encoded) {
-                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
-                            await addDoc(chatCollectionRef, { role: 'model', image: imageUrl, timestamp: Date.now() });
-                        } else {
-                            await addDoc(chatCollectionRef, { role: 'model', text: "Desculpe, não consegui gerar a imagem.", timestamp: Date.now() });
-                        }
-                    } else { // modo 'text'
-                        const userMessage = {
-                            role: 'user',
-                            text: currentPrompt,
-                            timestamp: Date.now(),
-                            image: selectedImageBase64 ? `data:${selectedImage.type};base64,${selectedImageBase64}` : null
-                        };
-                        await addDoc(chatCollectionRef, userMessage);
-                        
-                        const chatHistoryForApi = chatHistory.map(msg => ({ role: msg.role, parts: [{ text: msg.text || '' }] }));
-                        const currentUserPromptParts = [{ text: currentPrompt }];
-                        if (selectedImageBase64) {
-                            currentUserPromptParts.push({ inlineData: { mimeType: selectedImage.type, data: selectedImageBase64 } });
-                        }
-                        chatHistoryForApi.push({ role: 'user', parts: currentUserPromptParts });
-
-                        const payload = { contents: chatHistoryForApi };
-                        const apiKey = "";
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        const result = await response.json();
-
-                        if (result.candidates && result.candidates[0].content.parts[0].text) {
-                            await addDoc(chatCollectionRef, { role: 'model', text: result.candidates[0].content.parts[0].text, timestamp: Date.now() });
-                        } else {
-                            await addDoc(chatCollectionRef, { role: 'model', text: "Desculpe, não consegui gerar uma resposta.", timestamp: Date.now() });
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Erro ao enviar mensagem ou chamar a API:", error);
-                if (progressInterval) clearInterval(progressInterval);
-                if (appMode === 'chat') {
-                    await addDoc(chatCollectionRef, { role: 'model', text: "Ocorreu um erro.", timestamp: Date.now() });
-                } else {
-                    document.getElementById('code-content-textarea').value = "Ocorreu um erro ao comunicar com a IA.";
-                }
-            } finally {
-                if (progressInterval) clearInterval(progressInterval);
-                isLoading = false;
-                promptInput.value = '';
-                clearSelectedImage();
-                updateButtonStates();
-                if(appMode === 'chat') renderChatHistory();
-            }
-        }
-        
-        /**
-         * Subscreve às atualizações em tempo real do histórico do chat no Firestore.
-         */
-        function subscribeToChatHistory() {
-            if (unsubscribeChat) unsubscribeChat(); // Anular subscrição anterior
-            if (!db || !userId) return;
-
-            const chatCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/chatHistory`);
-            const q = query(chatCollectionRef, orderBy('timestamp'));
-
-            unsubscribeChat = onSnapshot(q, (snapshot) => {
-                chatHistory = snapshot.docs.map(doc => doc.data());
-                renderChatHistory();
-            }, (error) => {
-                console.error("Erro ao obter histórico do chat:", error);
-            });
-        }
-
-        // --- INICIALIZAÇÃO E LISTENERS DE EVENTOS ---
-        
-        /**
-         * Adiciona listeners de eventos para os elementos do modo programador.
-         */
-        function addDeveloperEventListeners() {
-            document.getElementById('save-project-button')?.addEventListener('click', saveProject);
-            document.getElementById('undo-button')?.addEventListener('click', undoCodeChange);
-            document.getElementById('copy-code-button')?.addEventListener('click', copyCodeToClipboard);
-            document.getElementById('code-content-textarea')?.addEventListener('input', runCode);
-            document.getElementById('code-type-select')?.addEventListener('change', runCode);
-            document.getElementById('code-content-textarea')?.addEventListener('input', addStateToHistory);
-        }
-
-        /**
-         * Inicializa a aplicação quando o DOM está carregado.
-         */
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Inicialização do Firebase
-            try {
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                    } else {
-                        userId = crypto.randomUUID();
-                    }
-                    userIdDisplay.textContent = `ID do Utilizador: ${userId}`;
-                    updateUIForMode(); // Chamar aqui para garantir que o userId está definido
-                });
-
-            } catch (error) {
-                console.error("Erro ao inicializar o Firebase:", error);
-                alert("Não foi possível conectar aos nossos serviços. Por favor, atualize a página.");
-            }
-
-            // Listeners de eventos globais
-            chatModeButton.addEventListener('click', () => setAppMode('chat'));
-            devModeButton.addEventListener('click', () => setAppMode('developer'));
-            
-            hamburgerButton.addEventListener('click', () => {
-                sidebar.classList.remove('-translate-x-full');
-                sidebarOverlay.classList.remove('hidden');
-            });
-            closeSidebarButton.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
-            });
-            sidebarOverlay.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
-            });
-
-            sendButton.addEventListener('click', () => sendMessage(appMode === 'chat' ? 'text' : 'code'));
-            generateImageDevButton.addEventListener('click', () => sendMessage('generateImageDev'));
-
-            promptInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage(appMode === 'chat' ? 'text' : 'code');
-                }
-            });
-            promptInput.addEventListener('input', updateButtonStates);
-            
-            attachImageButton.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    selectedImage = file;
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        selectedImageBase64 = reader.result.split(',')[1];
-                        imagePreviewImg.src = reader.result;
-                        imagePreviewName.textContent = file.name;
-                        imagePreviewContainer.classList.remove('hidden');
-                        updateButtonStates();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            clearImageButton.addEventListener('click', clearSelectedImage);
-
-            projectsList.addEventListener('click', (e) => {
-                const button = e.target.closest('button[data-project-id]');
-                if (button) {
-                    const projectId = button.dataset.projectId;
-                    const project = projects.find(p => p.id === projectId);
-                    if (project) {
-                        selectProject(project);
-                    }
-                }
-            });
-            
-            // Estado inicial da UI
-            updateUIForMode();
-        });
     </script>
 </body>
 </html>
